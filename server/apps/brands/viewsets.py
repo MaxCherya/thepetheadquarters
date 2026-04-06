@@ -1,3 +1,5 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
 
@@ -24,6 +26,7 @@ class BrandViewSet(viewsets.GenericViewSet):
         context["language"] = self.get_language()
         return context
 
+    @method_decorator(cache_page(60))
     def list(self, request):
         queryset = self.get_queryset()
         page = self.paginate_queryset(queryset)

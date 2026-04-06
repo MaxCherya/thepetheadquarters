@@ -1,4 +1,6 @@
 from django.db.models import Prefetch
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -51,6 +53,7 @@ class ProductViewSet(viewsets.GenericViewSet):
         context["language"] = self.get_language()
         return context
 
+    @method_decorator(cache_page(60))
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -70,6 +73,7 @@ class ProductViewSet(viewsets.GenericViewSet):
         serializer = ProductDetailSerializer(product, context=self.get_serializer_context())
         return success_response(serializer.data)
 
+    @method_decorator(cache_page(60))
     @action(detail=False, methods=["get"])
     def featured(self, request):
         queryset = self.get_queryset().filter(is_featured=True)

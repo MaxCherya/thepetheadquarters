@@ -1,10 +1,27 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { Cormorant_Garamond, Montserrat } from "next/font/google";
 
 import { isValidLocale, locales, siteUrl, defaultLocale } from "@/i18n/config";
-import type { Locale } from "@/i18n/config";
+import { Providers, ToastContainer } from "@/components/providers";
+import { CustomCursor } from "@/components/custom-cursor";
 
 import "../globals.css";
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-montserrat",
+  display: "swap",
+});
 
 export async function generateMetadata({
   params,
@@ -69,8 +86,12 @@ export default async function LocaleLayout({
   }
 
   return (
-    <html lang={locale}>
-      <body>{children}</body>
+    <html lang={locale} className={`dark ${cormorant.variable} ${montserrat.variable}`}>
+      <body>
+          <Providers>{children}</Providers>
+          <ToastContainer />
+          <CustomCursor />
+        </body>
     </html>
   );
 }

@@ -1,3 +1,5 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -29,6 +31,7 @@ class CategoryViewSet(viewsets.GenericViewSet):
         context["language"] = self.get_language()
         return context
 
+    @method_decorator(cache_page(60))
     def list(self, request):
         queryset = self.get_queryset()
 
@@ -55,6 +58,7 @@ class CategoryViewSet(viewsets.GenericViewSet):
         serializer = CategoryDetailSerializer(category, context=self.get_serializer_context())
         return success_response(serializer.data)
 
+    @method_decorator(cache_page(60))
     @action(detail=False, methods=["get"])
     def tree(self, request):
         root_categories = (
