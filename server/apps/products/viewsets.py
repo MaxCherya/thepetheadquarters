@@ -1,0 +1,82 @@
+from django.db.models import Prefetch
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
+from rest_framework.permissions import AllowAny
+
+from apps.core.pagination import StandardPagination
+from apps.core.responses import success_response, not_found_response
+
+from .filters import ProductFilter
+from .models import Product, ProductVariant
+from .serializers import ProductListSerializer, ProductDetailSerializer
+
+
+class ProductViewSet(viewsets.GenericViewSet):
+    permission_classes = [AllowAny]
+    pagination_class = StandardPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = ProductFilter
+    ordering_fields = ["created_at"]
+    ordering = ["-created_at"]
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        return (
+            Product.objects
+            .filter(is_active=True)
+            .prefetch_related(
+                "translations",
+                "images",
+                "product_categories",
+                Prefetch(
+                    "variants",
+                    queryset=ProductVariant.objects.filter(is_active=True).prefetch_related(
+                        "option_values__translations",
+                        "option_values__option_type__translations",
+                        "images",
+                    ),
+                    to_attr="active_variants",
+                ),
+            )
+            .distinct()
+        )
+
+    def get_language(self):
+        return self.request.query_params.get("lang", "en")
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["language"] = self.get_language()
+        return context
+
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = ProductListSerializer(page, many=True, context=self.get_serializer_context())
+            return self.get_paginated_response(serializer.data)
+
+        serializer = ProductListSerializer(queryset, many=True, context=self.get_serializer_context())
+        return success_response(serializer.data)
+
+    def retrieve(self, request, slug=None):
+        try:
+            product = self.get_queryset().get(slug=slug)
+        except Product.DoesNotExist:
+            return not_found_response("product.not_found")
+
+        serializer = ProductDetailSerializer(product, context=self.get_serializer_context())
+        return success_response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def featured(self, request):
+        queryset = self.get_queryset().filter(is_featured=True)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = ProductListSerializer(page, many=True, context=self.get_serializer_context())
+            return self.get_paginated_response(serializer.data)
+
+        serializer = ProductListSerializer(queryset, many=True, context=self.get_serializer_context())
+        return success_response(serializer.data)

@@ -28,9 +28,16 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "django_filters",
 ]
 
-LOCAL_APPS = []
+LOCAL_APPS = [
+    "apps.core",
+    "apps.categories",
+    "apps.brands",
+    "apps.products",
+    "apps.attributes",
+]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -137,6 +144,22 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ],
+    "EXCEPTION_HANDLER": "apps.core.exceptions.api_exception_handler",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "apps.core.throttling.AnonBurstThrottle",
+        "apps.core.throttling.AnonSustainedThrottle",
+        "apps.core.throttling.UserBurstThrottle",
+        "apps.core.throttling.UserSustainedThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon_burst": "30/minute",
+        "anon_sustained": "500/day",
+        "user_burst": "60/minute",
+        "user_sustained": "2000/day",
+    },
 }
 
 # ---------------------------------------------------------------------------
