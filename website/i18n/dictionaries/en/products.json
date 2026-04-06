@@ -9,14 +9,30 @@
     "brand": "Brand",
     "price": "Price Range",
     "inStock": "In Stock Only",
+    "onSale": "On Sale",
+    "featured": "Featured",
     "clear": "Clear All",
-    "apply": "Apply Filters"
+    "apply": "Apply Filters",
+    "allCategories": "All Categories",
+    "allBrands": "All Brands"
   },
   "sort": {
     "label": "Sort by",
     "newest": "Newest",
+    "oldest": "Oldest",
     "priceAsc": "Price: Low to High",
-    "priceDesc": "Price: High to Low"
+    "priceDesc": "Price: High to Low",
+    "nameAsc": "Name: A to Z",
+    "nameDesc": "Name: Z to A",
+    "rating": "Highest Rated"
+  },
+  "view": {
+    "grid": "Grid",
+    "list": "List"
+  },
+  "perPage": {
+    "label": "Show",
+    "perPage": "per page"
   },
   "results": {
     "showing": "Showing",
@@ -27,6 +43,8 @@
   },
   "pagination": {
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "page": "Page",
+    "of": "of"
   }
 }

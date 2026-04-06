@@ -10,6 +10,8 @@ interface Filters {
   min_price: string;
   max_price: string;
   in_stock: string;
+  on_sale: string;
+  featured: string;
 }
 
 interface FilterSidebarProps {
@@ -19,8 +21,12 @@ interface FilterSidebarProps {
     brand: string;
     price: string;
     inStock: string;
+    onSale: string;
+    featured: string;
     clear: string;
     apply: string;
+    allCategories: string;
+    allBrands: string;
   };
   categories: Category[];
   brands: Brand[];
@@ -101,7 +107,7 @@ export function FilterSidebar({
               padding: "var(--space-2) var(--space-3)",
             }}
           >
-            <option value="">All</option>
+            <option value="">{dict.allCategories}</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
@@ -138,7 +144,7 @@ export function FilterSidebar({
               padding: "var(--space-2) var(--space-3)",
             }}
           >
-            <option value="">All</option>
+            <option value="">{dict.allBrands}</option>
             {brands.map((b) => (
               <option key={b.id} value={b.id}>{b.name}</option>
             ))}
@@ -214,24 +220,44 @@ export function FilterSidebar({
         </div>
       </div>
 
-      {/* In Stock */}
-      <label className="flex items-center gap-3" style={{ cursor: "pointer" }}>
-        <input
-          type="checkbox"
-          checked={filters.in_stock === "true"}
-          onChange={(e) => onFilterChange("in_stock", e.target.checked ? "true" : "")}
-          className="h-4 w-4 accent-[var(--gold)]"
-        />
-        <span
-          style={{
-            fontFamily: "var(--font-montserrat)",
-            fontSize: "var(--text-sm)",
-            color: "var(--white-dim)",
-          }}
-        >
-          {dict.inStock}
-        </span>
-      </label>
+      {/* Checkboxes */}
+      <div className="flex flex-col gap-3">
+        <label className="flex items-center gap-3" style={{ cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={filters.in_stock === "true"}
+            onChange={(e) => onFilterChange("in_stock", e.target.checked ? "true" : "")}
+            className="h-4 w-4 accent-[var(--gold)]"
+          />
+          <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--white-dim)" }}>
+            {dict.inStock}
+          </span>
+        </label>
+
+        <label className="flex items-center gap-3" style={{ cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={filters.on_sale === "true"}
+            onChange={(e) => onFilterChange("on_sale", e.target.checked ? "true" : "")}
+            className="h-4 w-4 accent-[var(--gold)]"
+          />
+          <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--white-dim)" }}>
+            {dict.onSale}
+          </span>
+        </label>
+
+        <label className="flex items-center gap-3" style={{ cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={filters.featured === "true"}
+            onChange={(e) => onFilterChange("featured", e.target.checked ? "true" : "")}
+            className="h-4 w-4 accent-[var(--gold)]"
+          />
+          <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--white-dim)" }}>
+            {dict.featured}
+          </span>
+        </label>
+      </div>
     </div>
   );
 

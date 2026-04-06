@@ -4,11 +4,14 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { Skeleton } from "@heroui/react";
 import { useProducts } from "@/hooks/use-products";
 import { ProductCard } from "../../_components/product-card";
+import { ProductListItem } from "./product-list-item";
 import { FilterSidebar } from "./filter-sidebar";
 import { SearchSortBar } from "./search-sort-bar";
 import { Pagination } from "./pagination";
 import type { Category } from "@/types/category";
 import type { Brand } from "@/types/brand";
+
+type ViewMode = "grid" | "list";
 
 interface Filters {
   category: string;
@@ -16,6 +19,8 @@ interface Filters {
   min_price: string;
   max_price: string;
   in_stock: string;
+  on_sale: string;
+  featured: string;
 }
 
 const emptyFilters: Filters = {
@@ -24,6 +29,8 @@ const emptyFilters: Filters = {
   min_price: "",
   max_price: "",
   in_stock: "",
+  on_sale: "",
+  featured: "",
 };
 
 interface ProductsViewProps {
@@ -35,10 +42,16 @@ interface ProductsViewProps {
       brand: string;
       price: string;
       inStock: string;
+      onSale: string;
+      featured: string;
       clear: string;
       apply: string;
+      allCategories: string;
+      allBrands: string;
     };
-    sort: { label: string; newest: string; priceAsc: string; priceDesc: string };
+    sort: { label: string; newest: string; oldest: string; priceAsc: string; priceDesc: string; nameAsc: string; nameDesc: string; rating: string };
+    view: { grid: string; list: string };
+    perPage: { label: string; perPage: string };
     results: {
       showing: string;
       of: string;
@@ -46,14 +59,12 @@ interface ProductsViewProps {
       noResults: string;
       noResultsDescription: string;
     };
-    pagination: { previous: string; next: string };
+    pagination: { previous: string; next: string; page: string; of: string };
   };
   categories: Category[];
   brands: Brand[];
   lang: string;
 }
-
-const PAGE_SIZE = 12;
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -69,30 +80,31 @@ export function ProductsView({ dict, categories, brands, lang }: ProductsViewPro
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("-created_at");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
+  const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
 
   const debouncedSearch = useDebounce(search, 400);
-  const debouncedMinPrice = useDebounce(filters.min_price, 600);
   const debouncedMaxPrice = useDebounce(filters.max_price, 600);
 
   const params: Record<string, string> = {
     ordering: sort,
     page: String(page),
-    page_size: String(PAGE_SIZE),
+    page_size: String(pageSize),
   };
   if (debouncedSearch) params.search = debouncedSearch;
   if (filters.category) params.category = filters.category;
   if (filters.brand) params.brand = filters.brand;
-  if (debouncedMinPrice) params.min_price = String(Number(debouncedMinPrice) * 100);
   if (debouncedMaxPrice) params.max_price = String(Number(debouncedMaxPrice) * 100);
   if (filters.in_stock) params.in_stock = filters.in_stock;
+  if (filters.featured) params.featured = filters.featured;
 
   const { data, isLoading } = useProducts(params, lang);
 
   const products = data?.results ?? [];
   const totalCount = data?.count ?? 0;
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   const handleFilterChange = useCallback((key: keyof Filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -112,6 +124,11 @@ export function ProductsView({ dict, categories, brands, lang }: ProductsViewPro
 
   const handleSortChange = useCallback((value: string) => {
     setSort(value);
+    setPage(1);
+  }, []);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
     setPage(1);
   }, []);
 
@@ -140,6 +157,10 @@ export function ProductsView({ dict, categories, brands, lang }: ProductsViewPro
           onSearchChange={handleSearchChange}
           sort={sort}
           onSortChange={handleSortChange}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          pageSize={pageSize}
+          onPageSizeChange={handlePageSizeChange}
           onOpenFilters={() => setMobileFiltersOpen(true)}
         />
 
@@ -157,8 +178,8 @@ export function ProductsView({ dict, categories, brands, lang }: ProductsViewPro
           </p>
         )}
 
-        {/* Loading */}
-        {isLoading && (
+        {/* Loading — Grid */}
+        {isLoading && viewMode === "grid" && (
           <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="overflow-hidden rounded-lg" style={{ border: "1px solid var(--bg-border)" }}>
@@ -172,11 +193,36 @@ export function ProductsView({ dict, categories, brands, lang }: ProductsViewPro
           </div>
         )}
 
-        {/* Products grid */}
-        {!isLoading && products.length > 0 && (
+        {/* Loading — List */}
+        {isLoading && viewMode === "list" && (
+          <div className="flex flex-col gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex gap-4 overflow-hidden rounded-lg" style={{ border: "1px solid var(--bg-border)" }}>
+                <Skeleton className="h-32 w-32 shrink-0 rounded-none sm:h-44 sm:w-44" />
+                <div className="flex flex-1 flex-col justify-center py-3 pr-4">
+                  <Skeleton className="mb-2 h-6 w-3/4 rounded" />
+                  <Skeleton className="mb-2 h-4 w-full rounded" />
+                  <Skeleton className="h-5 w-1/4 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Products — Grid */}
+        {!isLoading && products.length > 0 && viewMode === "grid" && (
           <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
+
+        {/* Products — List */}
+        {!isLoading && products.length > 0 && viewMode === "list" && (
+          <div className="flex flex-col gap-4">
+            {products.map((product) => (
+              <ProductListItem key={product.id} product={product} />
             ))}
           </div>
         )}
