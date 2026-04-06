@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/types/product";
+import { StarRating } from "@/components/ui/star-rating";
 
 interface ProductCardProps {
   product: Product;
@@ -74,16 +75,12 @@ export function ProductCard({ product }: ProductCardProps) {
         </h3>
 
         {product.average_rating > 0 && (
-          <div
-            className="mb-1 flex items-center gap-1 sm:mb-2"
-            style={{
-              fontFamily: "var(--font-montserrat)",
-              fontSize: "var(--text-xs)",
-              color: "var(--gold)",
-            }}
-          >
-            <span>★ {product.average_rating}</span>
-            <span style={{ color: "var(--white-faint)" }}>({product.review_count})</span>
+          <div className="mb-1 sm:mb-2">
+            <StarRating
+              rating={Number(product.average_rating)}
+              size={12}
+              reviewCount={product.review_count}
+            />
           </div>
         )}
 

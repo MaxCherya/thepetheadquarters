@@ -5,7 +5,7 @@ from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.filters import OrderingFilter
+from .ordering import ProductOrderingFilter
 from rest_framework.permissions import AllowAny
 
 from apps.core.pagination import StandardPagination
@@ -19,9 +19,9 @@ from .serializers import ProductListSerializer, ProductDetailSerializer
 class ProductViewSet(viewsets.GenericViewSet):
     permission_classes = [AllowAny]
     pagination_class = StandardPagination
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, ProductOrderingFilter]
     filterset_class = ProductFilter
-    ordering_fields = ["created_at", "min_price"]
+    ordering_fields = ["created_at", "min_price", "average_rating"]
     ordering = ["-created_at"]
     lookup_field = "slug"
 
@@ -55,7 +55,6 @@ class ProductViewSet(viewsets.GenericViewSet):
         context["language"] = self.get_language()
         return context
 
-    @method_decorator(cache_page(60))
     def list(self, request):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)

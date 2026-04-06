@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Product } from "@/types/product";
+import { StarRating } from "@/components/ui/star-rating";
 
 interface ProductListItemProps {
   product: Product;
@@ -90,16 +91,12 @@ export function ProductListItem({ product }: ProductListItemProps) {
         )}
 
         {product.average_rating > 0 && (
-          <div
-            className="mb-2 flex items-center gap-1"
-            style={{
-              fontFamily: "var(--font-montserrat)",
-              fontSize: "var(--text-xs)",
-              color: "var(--gold)",
-            }}
-          >
-            <span>★ {product.average_rating}</span>
-            <span style={{ color: "var(--white-faint)" }}>({product.review_count})</span>
+          <div className="mb-2">
+            <StarRating
+              rating={Number(product.average_rating)}
+              size={14}
+              reviewCount={product.review_count}
+            />
           </div>
         )}
 
