@@ -1,0 +1,32 @@
+{
+  "title": "All Products",
+  "search": {
+    "placeholder": "Search products..."
+  },
+  "filters": {
+    "title": "Filters",
+    "category": "Category",
+    "brand": "Brand",
+    "price": "Price Range",
+    "inStock": "In Stock Only",
+    "clear": "Clear All",
+    "apply": "Apply Filters"
+  },
+  "sort": {
+    "label": "Sort by",
+    "newest": "Newest",
+    "priceAsc": "Price: Low to High",
+    "priceDesc": "Price: High to Low"
+  },
+  "results": {
+    "showing": "Showing",
+    "of": "of",
+    "products": "products",
+    "noResults": "No products found",
+    "noResultsDescription": "Try adjusting your filters or search terms."
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next"
+  }
+}

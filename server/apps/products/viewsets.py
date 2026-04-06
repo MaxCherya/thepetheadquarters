@@ -1,4 +1,5 @@
-from django.db.models import Prefetch
+from django.db import models
+from django.db.models import Min, Prefetch
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
@@ -20,7 +21,7 @@ class ProductViewSet(viewsets.GenericViewSet):
     pagination_class = StandardPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = ProductFilter
-    ordering_fields = ["created_at"]
+    ordering_fields = ["created_at", "min_price"]
     ordering = ["-created_at"]
     lookup_field = "slug"
 
@@ -28,6 +29,7 @@ class ProductViewSet(viewsets.GenericViewSet):
         return (
             Product.objects
             .filter(is_active=True)
+            .annotate(min_price=Min("variants__price", filter=models.Q(variants__is_active=True)))
             .prefetch_related(
                 "translations",
                 "images",

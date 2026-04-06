@@ -52,12 +52,8 @@ export function CategoriesSection({ dict, categories }: CategoriesSectionProps) 
             <Link
               key={category.id}
               href={`/categories/${category.slug}`}
-              className="group block overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-[var(--gold)] hover:shadow-[0_8px_30px_rgba(201,168,76,0.2)]"
-              style={{
-                background: "var(--bg-secondary)",
-                border: "1px solid var(--bg-border)",
-                borderRadius: "var(--radius-lg)",
-              }}
+              className="card-hover group block overflow-hidden rounded-lg"
+              style={{ background: "var(--bg-secondary)" }}
             >
               {category.image && (
                 <div className="relative aspect-square overflow-hidden">

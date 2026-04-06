@@ -5,6 +5,7 @@ import { Cormorant_Garamond, Montserrat } from "next/font/google";
 import { isValidLocale, locales, siteUrl, defaultLocale } from "@/i18n/config";
 import { Providers, ToastContainer } from "@/components/providers";
 import { ScrollAnimations } from "@/components/scroll-animations";
+import { PageLoader } from "@/components/page-loader";
 
 import "../globals.css";
 
@@ -86,8 +87,16 @@ export default async function LocaleLayout({
   }
 
   return (
-    <html lang={locale} className={`dark ${cormorant.variable} ${montserrat.variable}`}>
+    <html lang={locale} className={`dark page-loading ${cormorant.variable} ${montserrat.variable}`}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.documentElement.className=document.documentElement.className.replace('page-loading','page-loading');`,
+          }}
+        />
+      </head>
       <body>
+          <PageLoader />
           <Providers>{children}</Providers>
           <ToastContainer />
           <ScrollAnimations />

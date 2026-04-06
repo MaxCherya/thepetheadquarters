@@ -90,6 +90,25 @@
   --radius-full: 9999px;
 }
 
+/* Smooth hover transitions for all interactive elements */
+a, button, [role="button"], .cursor-pointer,
+input, select, textarea {
+  transition: all 0.3s ease !important;
+}
+
+/* Card hover effect */
+html .card-hover {
+  border: 1px solid var(--bg-border) !important;
+  box-shadow: 0 8px 30px rgba(201, 168, 76, 0) !important;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease !important;
+}
+
+html .card-hover:hover {
+  border-color: var(--gold) !important;
+  box-shadow: 0 8px 30px rgba(201, 168, 76, 0.2) !important;
+  transform: translateY(-4px) !important;
+}
+
 /* Custom cursors */
 html, html * {
   cursor: url("/cursors/default.svg") 4 2, auto !important;
@@ -101,6 +120,7 @@ html [role="button"], html [role="button"] *,
 html label, html select, html summary,
 html [type="submit"], html [type="button"],
 html [type="reset"], html [type="checkbox"], html [type="radio"],
+html [type="range"],
 html .cursor-pointer, html .cursor-pointer * {
   cursor: url("/cursors/pointer.svg") 14 14, pointer !important;
 }
@@ -140,6 +160,76 @@ html input[type="number"], html textarea, html [contenteditable="true"] {
   background: var(--bg-secondary);
 }
 
+/* Price range slider */
+.price-range-thumb {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background: transparent !important;
+}
+
+.price-range-thumb::-webkit-slider-runnable-track {
+  height: 8px;
+  background: transparent;
+}
+
+.price-range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none !important;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--gold) !important;
+  border: 3px solid var(--bg-primary);
+  box-shadow: 0 0 0 2px var(--gold);
+  margin-top: -7px;
+  cursor: url("/cursors/pointer.svg") 14 14, pointer !important;
+}
+
+.price-range-thumb::-webkit-slider-thumb:active {
+  cursor: url("/cursors/pointer.svg") 14 14, pointer !important;
+  background: var(--gold-light) !important;
+}
+
+.price-range-thumb::-moz-range-track {
+  height: 8px;
+  background: transparent;
+  border: none;
+}
+
+.price-range-thumb::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 3px solid var(--bg-primary);
+  box-shadow: 0 0 0 2px var(--gold);
+  cursor: url("/cursors/pointer.svg") 14 14, pointer !important;
+}
+
+.price-range-thumb::-moz-range-thumb:active {
+  cursor: url("/cursors/pointer.svg") 14 14, pointer !important;
+  background: var(--gold-light);
+}
+
+/* Page loader — locks scroll completely */
+html.page-loading {
+  overflow: hidden !important;
+  height: 100dvh !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+}
+
+html.page-loading body {
+  overflow: hidden !important;
+  height: 100dvh !important;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
+  -webkit-overflow-scrolling: auto !important;
+}
+
 /* Base — force our brand colors */
 html {
   background-color: #0A0A0A !important;
@@ -157,6 +247,63 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
 }
+
+/* Branded focus styles */
+input:focus, textarea:focus, select:focus {
+  border-color: var(--gold) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.2) !important;
+}
+
+select option {
+  background: var(--bg-tertiary);
+  color: var(--white);
+}
+
+input[type="checkbox"] {
+  accent-color: var(--gold);
+}
+
+::selection {
+  background: rgba(201, 168, 76, 0.3);
+  color: var(--white);
+}
+
+/* Scroll animations — pure CSS, no GSAP hydration issues */
+[data-animate] {
+  opacity: 0;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+[data-animate="fade-up"] { transform: translateY(40px); }
+[data-animate="slide-left"] { transform: translateX(-60px); }
+[data-animate="scale"] { transform: scale(0.9); }
+[data-animate="divider"] { transform: scaleX(0); }
+[data-animate="stagger"] { opacity: 1; transform: none; }
+[data-animate="stagger"] > * {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+/* Animated state — added by IntersectionObserver */
+[data-animate].animated {
+  opacity: 1;
+  transform: none;
+}
+
+[data-animate="stagger"].animated > *:nth-child(1) { opacity: 1; transform: none; transition-delay: 0s; }
+[data-animate="stagger"].animated > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 0.1s; }
+[data-animate="stagger"].animated > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 0.2s; }
+[data-animate="stagger"].animated > *:nth-child(4) { opacity: 1; transform: none; transition-delay: 0.3s; }
+[data-animate="stagger"].animated > *:nth-child(5) { opacity: 1; transform: none; transition-delay: 0.4s; }
+[data-animate="stagger"].animated > *:nth-child(6) { opacity: 1; transform: none; transition-delay: 0.5s; }
+[data-animate="stagger"].animated > *:nth-child(7) { opacity: 1; transform: none; transition-delay: 0.6s; }
+[data-animate="stagger"].animated > *:nth-child(8) { opacity: 1; transform: none; transition-delay: 0.7s; }
+[data-animate="stagger"].animated > *:nth-child(9) { opacity: 1; transform: none; transition-delay: 0.8s; }
+[data-animate="stagger"].animated > *:nth-child(10) { opacity: 1; transform: none; transition-delay: 0.9s; }
+[data-animate="stagger"].animated > *:nth-child(11) { opacity: 1; transform: none; transition-delay: 1.0s; }
+[data-animate="stagger"].animated > *:nth-child(12) { opacity: 1; transform: none; transition-delay: 1.1s; }
 
 /* Gold shimmer text effect */
 .gold-shimmer {
