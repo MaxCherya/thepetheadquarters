@@ -87,7 +87,7 @@ export function NewsletterSection({ dict }: NewsletterSectionProps) {
 
   return (
     <section className="py-16 md:py-24" style={{ background: "var(--bg-secondary)" }}>
-      <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
+      <div className="mx-auto max-w-2xl px-4 text-center sm:px-6" data-animate="fade-up">
         <span
           className="mb-4 block"
           style={{
@@ -154,7 +154,7 @@ export function NewsletterSection({ dict }: NewsletterSectionProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="cursor-invert shrink-0 transition-all duration-300 hover:-translate-y-0.5"
+              className="shrink-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(201,168,76,0.4)]"
               style={{
                 background: "var(--gold)",
                 color: "var(--black)",

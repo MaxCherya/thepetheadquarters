@@ -16,7 +16,7 @@ export function BrandsSection({ dict, brands }: BrandsSectionProps) {
   return (
     <section className="py-16 md:py-24" style={{ background: "var(--bg-secondary)" }}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-8 text-center md:mb-12">
+        <div className="mb-8 text-center md:mb-12" data-animate="fade-up">
           <span
             className="mb-4 block"
             style={{
@@ -42,11 +42,12 @@ export function BrandsSection({ dict, brands }: BrandsSectionProps) {
           </h2>
           <div
             className="mx-auto mt-4"
+            data-animate="divider"
             style={{ width: 60, height: 1, background: "var(--gold)" }}
           />
         </div>
 
-        <div className="grid grid-cols-2 items-center justify-items-center gap-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-10">
+        <div className="grid grid-cols-2 items-center justify-items-center gap-6 sm:flex sm:flex-wrap sm:justify-center sm:gap-10" data-animate="stagger">
           {brands.map((brand) => (
             <Link
               key={brand.id}

@@ -16,7 +16,7 @@ export function CategoriesSection({ dict, categories }: CategoriesSectionProps) 
   return (
     <section className="py-16 md:py-24" style={{ background: "var(--bg-primary)" }}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-8 text-center md:mb-12">
+        <div className="mb-8 text-center md:mb-12" data-animate="fade-up">
           <span
             className="mb-4 block"
             style={{
@@ -42,16 +42,17 @@ export function CategoriesSection({ dict, categories }: CategoriesSectionProps) 
           </h2>
           <div
             className="mx-auto mt-4"
+            data-animate="divider"
             style={{ width: 60, height: 1, background: "var(--gold)" }}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4" data-animate="stagger">
           {categories.map((category) => (
             <Link
               key={category.id}
               href={`/categories/${category.slug}`}
-              className="group block overflow-hidden transition-all duration-300 hover:-translate-y-0.5"
+              className="group block overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-[var(--gold)] hover:shadow-[0_8px_30px_rgba(201,168,76,0.2)]"
               style={{
                 background: "var(--bg-secondary)",
                 border: "1px solid var(--bg-border)",

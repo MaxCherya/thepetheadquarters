@@ -15,7 +15,7 @@ export function FeaturedProductsSection({ dict, products }: FeaturedProductsSect
   return (
     <section className="py-16 md:py-24" style={{ background: "var(--bg-secondary)" }}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="mb-8 text-center md:mb-12">
+        <div className="mb-8 text-center md:mb-12" data-animate="fade-up">
           <span
             className="mb-4 block"
             style={{
@@ -41,11 +41,12 @@ export function FeaturedProductsSection({ dict, products }: FeaturedProductsSect
           </h2>
           <div
             className="mx-auto mt-4"
+            data-animate="divider"
             style={{ width: 60, height: 1, background: "var(--gold)" }}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-6 md:grid-cols-3 lg:grid-cols-4" data-animate="stagger">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

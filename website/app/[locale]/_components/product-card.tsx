@@ -14,7 +14,7 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="group block transition-all duration-300 hover:-translate-y-0.5"
+      className="group block transition-all duration-300 hover:-translate-y-1 hover:border-[var(--gold)] hover:shadow-[0_8px_30px_rgba(201,168,76,0.2)]"
       style={{
         background: "var(--bg-secondary)",
         border: "1px solid var(--bg-border)",

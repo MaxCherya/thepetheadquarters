@@ -20,7 +20,7 @@ export function HeroSection({ dict }: HeroSectionProps) {
       <HeroBackground />
 
       <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6">
-        <div className="max-w-2xl">
+        <div className="max-w-2xl" data-animate="slide-left">
           <span
             className="mb-4 inline-block rounded-full px-3 py-1 sm:mb-6 sm:px-4 sm:py-1.5"
             style={{
@@ -65,7 +65,7 @@ export function HeroSection({ dict }: HeroSectionProps) {
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <Link
               href="/products"
-              className="cursor-invert inline-block text-center transition-all duration-300 hover:-translate-y-0.5"
+              className="inline-block text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(201,168,76,0.4)]"
               style={{
                 background: "var(--gold)",
                 color: "var(--black)",
@@ -83,7 +83,7 @@ export function HeroSection({ dict }: HeroSectionProps) {
 
             <Link
               href="/categories"
-              className="inline-block text-center transition-all duration-300 hover:bg-[var(--gold)] hover:text-[var(--black)]"
+              className="inline-block text-center transition-all duration-300 hover:-translate-y-0.5 hover:bg-[var(--gold)] hover:text-[var(--black)] hover:shadow-[0_4px_20px_rgba(201,168,76,0.4)]"
               style={{
                 background: "transparent",
                 color: "var(--gold)",

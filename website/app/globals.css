@@ -91,25 +91,24 @@
 }
 
 /* Custom cursors */
-* {
-  cursor: url("/cursors/default.svg") 4 2, auto;
+html, html * {
+  cursor: url("/cursors/default.svg") 4 2, auto !important;
 }
 
-a, a *, button, button *, [role="button"], [role="button"] *,
-label, select, summary, [type="submit"], [type="button"],
-[type="reset"], [type="checkbox"], [type="radio"],
-.cursor-pointer, .cursor-pointer * {
-  cursor: none !important;
+html a, html a *,
+html button, html button *,
+html [role="button"], html [role="button"] *,
+html label, html select, html summary,
+html [type="submit"], html [type="button"],
+html [type="reset"], html [type="checkbox"], html [type="radio"],
+html .cursor-pointer, html .cursor-pointer * {
+  cursor: url("/cursors/pointer.svg") 14 14, pointer !important;
 }
 
-input[type="text"], input[type="email"], input[type="password"],
-input[type="search"], input[type="tel"], input[type="url"],
-input[type="number"], textarea, [contenteditable="true"] {
+html input[type="text"], html input[type="email"], html input[type="password"],
+html input[type="search"], html input[type="tel"], html input[type="url"],
+html input[type="number"], html textarea, html [contenteditable="true"] {
   cursor: url("/cursors/text.svg") 12 12, text !important;
-}
-
-[disabled], [aria-disabled="true"] {
-  cursor: url("/cursors/not-allowed.svg") 12 12, not-allowed !important;
 }
 
 /* Custom scrollbar */

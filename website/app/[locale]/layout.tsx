@@ -4,7 +4,7 @@ import { Cormorant_Garamond, Montserrat } from "next/font/google";
 
 import { isValidLocale, locales, siteUrl, defaultLocale } from "@/i18n/config";
 import { Providers, ToastContainer } from "@/components/providers";
-import { CustomCursor } from "@/components/custom-cursor";
+import { ScrollAnimations } from "@/components/scroll-animations";
 
 import "../globals.css";
 
@@ -90,7 +90,7 @@ export default async function LocaleLayout({
       <body>
           <Providers>{children}</Providers>
           <ToastContainer />
-          <CustomCursor />
+          <ScrollAnimations />
         </body>
     </html>
   );
