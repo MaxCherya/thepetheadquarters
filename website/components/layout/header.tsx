@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, ShoppingCart, Menu, X, ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 interface HeaderProps {
   dict: {
@@ -33,6 +33,7 @@ export function Header({ dict }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     function onScroll() {
@@ -98,22 +99,31 @@ export function Header({ dict }: HeaderProps) {
 
           {/* Desktop nav */}
           <nav className="hidden items-center gap-1 lg:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.key}
-                href={link.href}
-                className="relative px-4 py-2 transition-colors duration-200 hover:text-[var(--gold)]"
-                style={{
-                  fontFamily: "var(--font-montserrat)",
-                  fontSize: "var(--text-sm)",
-                  fontWeight: "var(--weight-medium)",
-                  color: "var(--white-dim)",
-                  letterSpacing: "var(--tracking-wide)",
-                }}
-              >
-                {dict[link.key]}
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+              return (
+                <Link
+                  key={link.key}
+                  href={link.href}
+                  className="relative px-4 py-2 transition-colors duration-200 hover:text-[var(--gold)]"
+                  style={{
+                    fontFamily: "var(--font-montserrat)",
+                    fontSize: "var(--text-sm)",
+                    fontWeight: "var(--weight-medium)",
+                    color: isActive ? "var(--gold)" : "var(--white-dim)",
+                    letterSpacing: "var(--tracking-wide)",
+                  }}
+                >
+                  {dict[link.key]}
+                  {isActive && (
+                    <span
+                      className="absolute bottom-0 left-4 right-4 h-[2px] rounded-full"
+                      style={{ background: "var(--gold)" }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Right actions */}
@@ -230,14 +240,16 @@ export function Header({ dict }: HeaderProps) {
         <div className="h-16" />
 
         <nav className="flex flex-1 flex-col justify-center px-8">
-          {navLinks.map((link, i) => (
+          {navLinks.map((link, i) => {
+            const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
+            return (
             <Link
               key={link.key}
               href={link.href}
               onClick={() => setMobileOpen(false)}
               className="group flex items-center justify-between border-b py-5 transition-all duration-300"
               style={{
-                borderColor: "var(--bg-border)",
+                borderColor: isActive ? "var(--gold)" : "var(--bg-border)",
                 opacity: mobileOpen ? 1 : 0,
                 transform: mobileOpen ? "none" : "translateX(-30px)",
                 transitionDelay: mobileOpen ? `${i * 80}ms` : "0ms",
@@ -249,7 +261,7 @@ export function Header({ dict }: HeaderProps) {
                   fontFamily: "var(--font-cormorant)",
                   fontSize: "var(--text-3xl)",
                   fontWeight: "var(--weight-light)",
-                  color: "var(--white)",
+                  color: isActive ? "var(--gold)" : "var(--white)",
                 }}
               >
                 {dict[link.key]}
@@ -260,7 +272,8 @@ export function Header({ dict }: HeaderProps) {
                 style={{ color: "var(--gold)", opacity: 0.5 }}
               />
             </Link>
-          ))}
+            );
+          })}
         </nav>
 
         {/* Bottom info */}
