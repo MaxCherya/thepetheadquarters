@@ -3,9 +3,13 @@ import type { Metadata } from "next";
 import { Cormorant_Garamond, Montserrat } from "next/font/google";
 
 import { isValidLocale, locales, siteUrl, defaultLocale } from "@/i18n/config";
+import type { Locale } from "@/i18n/config";
+import { getDictionary } from "@/i18n/dictionaries";
 import { Providers, ToastContainer } from "@/components/providers";
 import { ScrollAnimations } from "@/components/scroll-animations";
 import { PageLoader } from "@/components/page-loader";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 import "../globals.css";
 
@@ -86,6 +90,8 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  const common = await getDictionary(locale as Locale, "common");
+
   return (
     <html lang={locale} className={`dark page-loading ${cormorant.variable} ${montserrat.variable}`}>
       <head>
@@ -97,7 +103,9 @@ export default async function LocaleLayout({
       </head>
       <body>
           <PageLoader />
+          <Header dict={common.nav} />
           <Providers>{children}</Providers>
+          <Footer dict={common.footer} navDict={common.nav} />
           <ToastContainer />
           <ScrollAnimations />
         </body>

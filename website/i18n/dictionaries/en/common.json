@@ -1,3 +1,25 @@
 {
-  "siteName": "The Pet Headquarters"
+  "siteName": "The Pet Headquarters",
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "categories": "Categories",
+    "brands": "Brands",
+    "about": "About",
+    "contact": "Contact",
+    "search": "Search...",
+    "cart": "Cart"
+  },
+  "footer": {
+    "shop": "Shop",
+    "company": "Company",
+    "legal": "Legal",
+    "about": "About Us",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions",
+    "cookies": "Cookie Policy",
+    "copyright": "All rights reserved.",
+    "tagline": "Premium products for your beloved companions."
+  }
 }
