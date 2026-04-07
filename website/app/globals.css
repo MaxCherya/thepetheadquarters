@@ -269,6 +269,43 @@ input[type="checkbox"] {
   color: var(--white);
 }
 
+/* Product description HTML styling */
+.product-description h3 {
+  font-family: var(--font-cormorant);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-medium);
+  color: var(--white);
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-3);
+}
+
+.product-description p {
+  margin-bottom: var(--space-4);
+}
+
+.product-description ul {
+  list-style: none;
+  padding: 0;
+  margin-bottom: var(--space-4);
+}
+
+.product-description ul li {
+  position: relative;
+  padding-left: var(--space-5);
+  margin-bottom: var(--space-2);
+}
+
+.product-description ul li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
 /* Scroll animations — pure CSS, no GSAP hydration issues */
 [data-animate] {
   opacity: 0;

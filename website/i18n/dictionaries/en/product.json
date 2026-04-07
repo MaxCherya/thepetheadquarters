@@ -1,0 +1,20 @@
+{
+  "breadcrumb": {
+    "home": "Home",
+    "products": "Products"
+  },
+  "details": {
+    "sku": "SKU",
+    "price": "Price",
+    "quantity": "Quantity",
+    "addToCart": "Add to Cart",
+    "outOfStock": "Out of Stock",
+    "inStock": "In Stock",
+    "lowStock": "Only {count} left",
+    "onSale": "Sale",
+    "description": "Description",
+    "specifications": "Specifications",
+    "selectVariant": "Select an option",
+    "reviews": "Reviews"
+  }
+}
