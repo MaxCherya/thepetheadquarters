@@ -306,7 +306,7 @@ input[type="checkbox"] {
   background: var(--gold);
 }
 
-/* Scroll animations — pure CSS, no GSAP hydration issues */
+/* Scroll animations — CSS initial states, JS reveals via inline styles */
 [data-animate] {
   opacity: 0;
   transition: opacity 0.8s ease, transform 0.8s ease;
@@ -322,25 +322,6 @@ input[type="checkbox"] {
   transform: translateY(50px);
   transition: opacity 0.6s ease, transform 0.6s ease;
 }
-
-/* Animated state — added by IntersectionObserver via data attribute */
-[data-animated] {
-  opacity: 1 !important;
-  transform: none !important;
-}
-
-[data-animate="stagger"][data-animated] > *:nth-child(1) { opacity: 1; transform: none; transition-delay: 0s; }
-[data-animate="stagger"][data-animated] > *:nth-child(2) { opacity: 1; transform: none; transition-delay: 0.1s; }
-[data-animate="stagger"][data-animated] > *:nth-child(3) { opacity: 1; transform: none; transition-delay: 0.2s; }
-[data-animate="stagger"][data-animated] > *:nth-child(4) { opacity: 1; transform: none; transition-delay: 0.3s; }
-[data-animate="stagger"][data-animated] > *:nth-child(5) { opacity: 1; transform: none; transition-delay: 0.4s; }
-[data-animate="stagger"][data-animated] > *:nth-child(6) { opacity: 1; transform: none; transition-delay: 0.5s; }
-[data-animate="stagger"][data-animated] > *:nth-child(7) { opacity: 1; transform: none; transition-delay: 0.6s; }
-[data-animate="stagger"][data-animated] > *:nth-child(8) { opacity: 1; transform: none; transition-delay: 0.7s; }
-[data-animate="stagger"][data-animated] > *:nth-child(9) { opacity: 1; transform: none; transition-delay: 0.8s; }
-[data-animate="stagger"][data-animated] > *:nth-child(10) { opacity: 1; transform: none; transition-delay: 0.9s; }
-[data-animate="stagger"][data-animated] > *:nth-child(11) { opacity: 1; transform: none; transition-delay: 1.0s; }
-[data-animate="stagger"][data-animated] > *:nth-child(12) { opacity: 1; transform: none; transition-delay: 1.1s; }
 
 /* Gold shimmer text effect */
 .gold-shimmer {

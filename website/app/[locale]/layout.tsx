@@ -42,6 +42,10 @@ export async function generateMetadata({
 
   return {
     metadataBase: new URL(siteUrl),
+    icons: {
+      icon: "/img/logo.png",
+      apple: "/img/logo.png",
+    },
     title: {
       template: "%s | The Pet Headquarters",
       default: "The Pet Headquarters",

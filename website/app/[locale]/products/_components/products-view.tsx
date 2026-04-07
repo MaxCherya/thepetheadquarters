@@ -64,6 +64,7 @@ interface ProductsViewProps {
   categories: Category[];
   brands: Brand[];
   lang: string;
+  initialSearch?: string;
 }
 
 function useDebounce<T>(value: T, delay: number): T {
@@ -75,9 +76,9 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
-export function ProductsView({ dict, categories, brands, lang }: ProductsViewProps) {
+export function ProductsView({ dict, categories, brands, lang, initialSearch = "" }: ProductsViewProps) {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch);
   const [sort, setSort] = useState("-created_at");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);

@@ -15,10 +15,13 @@ export const metadata: Metadata = {
 
 export default async function ProductsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
+  searchParams: Promise<{ search?: string }>;
 }) {
   const { locale } = await params;
+  const { search: initialSearch } = await searchParams;
   const dict = await getDictionary(locale, "products");
 
   const [categories, brands] = await Promise.allSettled([
@@ -53,6 +56,7 @@ export default async function ProductsPage({
           categories={categories.status === "fulfilled" ? categories.value : []}
           brands={brands.status === "fulfilled" ? brands.value : []}
           lang={locale}
+          initialSearch={initialSearch || ""}
         />
       </div>
     </main>

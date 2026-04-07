@@ -1,0 +1,41 @@
+{
+  "title": "About Us",
+  "hero": {
+    "heading": "We Believe Every Pet Deserves the Best",
+    "description": "Founded in the United Kingdom, The Pet Headquarters is a premium destination for pet owners who refuse to compromise on quality. We curate only the finest products, partnering with trusted brands and veterinary experts to bring you a collection that meets the highest standards."
+  },
+  "values": {
+    "title": "Our Values",
+    "items": [
+      {
+        "title": "Quality First",
+        "description": "Every product in our collection is rigorously vetted. We partner with brands that share our commitment to excellence, ensuring your pet receives nothing but the best."
+      },
+      {
+        "title": "Expert Curated",
+        "description": "Our team of pet care professionals and veterinary advisors hand-select each product. If it doesn't meet our standards, it doesn't make it to our shelves."
+      },
+      {
+        "title": "Sustainability",
+        "description": "We prioritise brands that practice responsible sourcing and sustainable manufacturing. Caring for pets means caring for the planet they live on."
+      },
+      {
+        "title": "Customer Commitment",
+        "description": "Your satisfaction drives everything we do. From browsing to delivery, we're dedicated to making your experience seamless and enjoyable."
+      }
+    ]
+  },
+  "story": {
+    "title": "Our Story",
+    "paragraphs": [
+      "The Pet Headquarters was born from a simple observation: pet owners deserve better. Too many stores offer generic products with little regard for quality or the wellbeing of animals.",
+      "We set out to create something different — a curated marketplace where every item has earned its place through quality, safety, and value. Our team works directly with manufacturers and brands to ensure that what reaches your door is genuinely premium.",
+      "Based in the UK, we serve pet owners nationwide with fast, reliable delivery. Whether you have a playful puppy, a distinguished senior cat, or a curious hamster, we have exactly what they need."
+    ]
+  },
+  "cta": {
+    "title": "Ready to Explore?",
+    "description": "Discover our curated collection of premium pet products.",
+    "button": "Shop Now"
+  }
+}

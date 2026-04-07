@@ -1,66 +1,102 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 export function ScrollAnimations() {
   const pathname = usePathname();
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  const processElements = useCallback(() => {
-    const elements = document.querySelectorAll("[data-animate]:not([data-animated])");
-    if (elements.length === 0) return;
-
-    // Reveal elements already in viewport
-    elements.forEach((el) => {
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight + 50 && rect.bottom > 0) {
-        el.setAttribute("data-animated", "true");
-      }
-    });
-
-    // Observe remaining for scroll
-    const remaining = document.querySelectorAll("[data-animate]:not([data-animated])");
-    if (remaining.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.setAttribute("data-animated", "true");
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0, rootMargin: "0px 0px 50px 0px" },
-    );
-
-    remaining.forEach((el) => observer.observe(el));
-
-    return () => observer.disconnect();
+  useEffect(() => {
+    setMounted(true);
   }, []);
 
   useEffect(() => {
-    // Scroll to top on navigation
+    if (!mounted) return;
+
     window.scrollTo(0, 0);
+    observerRef.current?.disconnect();
 
-    // Run multiple times to catch elements that render late
-    const t1 = setTimeout(processElements, 50);
-    const t2 = setTimeout(processElements, 200);
-    const t3 = setTimeout(processElements, 500);
+    const reveal = (el: Element) => {
+      const htmlEl = el as HTMLElement;
+      if (htmlEl.getAttribute("data-animate") === "stagger") {
+        Array.from(htmlEl.children).forEach((child, i) => {
+          setTimeout(() => {
+            (child as HTMLElement).style.opacity = "1";
+            (child as HTMLElement).style.transform = "none";
+          }, i * 100);
+        });
+      } else {
+        htmlEl.style.opacity = "1";
+        htmlEl.style.transform = "none";
+      }
+    };
 
-    // Also watch for new elements being added to DOM
-    const mutationObserver = new MutationObserver(() => {
-      processElements();
+    const setup = () => {
+      const elements = document.querySelectorAll("[data-animate]");
+      if (elements.length === 0) return;
+
+      elements.forEach((el) => {
+        const h = el as HTMLElement;
+        h.style.removeProperty("opacity");
+        h.style.removeProperty("transform");
+        if (h.getAttribute("data-animate") === "stagger") {
+          Array.from(h.children).forEach((c) => {
+            (c as HTMLElement).style.removeProperty("opacity");
+            (c as HTMLElement).style.removeProperty("transform");
+          });
+        }
+      });
+
+      void document.body.offsetHeight;
+
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              reveal(entry.target);
+              observerRef.current?.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0, rootMargin: "0px 0px 50px 0px" },
+      );
+
+      elements.forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight + 50 && rect.bottom > 0) {
+          setTimeout(() => reveal(el), 50);
+        } else {
+          observerRef.current?.observe(el);
+        }
+      });
+    };
+
+    const t1 = setTimeout(setup, 100);
+    const t2 = setTimeout(setup, 400);
+
+    const mo = new MutationObserver(() => {
+      document.querySelectorAll("[data-animate]").forEach((el) => {
+        if ((el as HTMLElement).style.opacity !== "1") {
+          const rect = el.getBoundingClientRect();
+          if (rect.top < window.innerHeight + 50 && rect.bottom > 0) {
+            reveal(el);
+          } else {
+            observerRef.current?.observe(el);
+          }
+        }
+      });
     });
-    mutationObserver.observe(document.body, { childList: true, subtree: true });
+    mo.observe(document.body, { childList: true, subtree: true });
 
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
-      clearTimeout(t3);
-      mutationObserver.disconnect();
+      observerRef.current?.disconnect();
+      mo.disconnect();
     };
-  }, [pathname, processElements]);
+  }, [pathname, mounted]);
 
   return null;
 }

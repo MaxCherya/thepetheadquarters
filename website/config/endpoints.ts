@@ -22,4 +22,7 @@ export const endpoints = {
   newsletter: {
     subscribe: `${API_BASE}/newsletter/subscribe/`,
   },
+  contact: {
+    send: `${API_BASE}/contact/`,
+  },
 } as const;

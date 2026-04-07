@@ -1,0 +1,23 @@
+{
+  "title": "Contact Us",
+  "subtitle": "We'd love to hear from you. Whether you have a question about our products, need help with an order, or just want to say hello — we're here.",
+  "form": {
+    "name": "Your Name",
+    "email": "Email Address",
+    "subject": "Subject",
+    "message": "Your Message",
+    "send": "Send Message",
+    "success": "Message sent! We'll get back to you soon.",
+    "error": "Something went wrong. Please try again.",
+    "nameRequired": "Please enter your name.",
+    "emailRequired": "Please enter your email.",
+    "emailInvalid": "Please enter a valid email.",
+    "messageRequired": "Please enter a message."
+  },
+  "info": {
+    "title": "Get in Touch",
+    "email": "hello@thepetheadquarters.co.uk",
+    "hours": "Mon — Fri, 9:00 — 17:00 GMT",
+    "response": "We typically respond within 24 hours."
+  }
+}
