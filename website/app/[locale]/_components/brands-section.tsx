@@ -33,7 +33,7 @@ export function BrandsSection({ dict, brands }: BrandsSectionProps) {
             style={{
               fontFamily: "var(--font-cormorant)",
               fontSize: "clamp(1.5rem, 4vw, 2.25rem)",
-              fontWeight: "var(--weight-light)",
+              fontWeight: "var(--weight-regular)",
               color: "var(--white)",
               letterSpacing: "var(--tracking-tight)",
             }}

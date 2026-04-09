@@ -21,7 +21,7 @@ export function LegalPage({ data, backLabel, backHref }: LegalPageProps) {
             style={{
               fontFamily: "var(--font-cormorant)",
               fontSize: "clamp(2rem, 5vw, 3rem)",
-              fontWeight: "var(--weight-light)",
+              fontWeight: "var(--weight-regular)",
               color: "var(--white)",
             }}
           >

@@ -49,7 +49,7 @@ export function ProductCard({ product }: ProductCardProps) {
             className="absolute left-2 top-2 rounded-full px-2 py-0.5 sm:left-3 sm:top-3 sm:px-3 sm:py-1"
             style={{
               background: "var(--error)",
-              color: "var(--white)",
+              color: "#FFFFFF",
               fontFamily: "var(--font-montserrat)",
               fontSize: "var(--text-xs)",
               fontWeight: "var(--weight-medium)",

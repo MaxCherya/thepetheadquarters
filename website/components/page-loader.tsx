@@ -72,7 +72,7 @@ export function PageLoader() {
         style={{
           fontFamily: "var(--font-cormorant)",
           fontSize: "var(--text-xl)",
-          fontWeight: "var(--weight-light)",
+          fontWeight: "var(--weight-regular)",
           color: "var(--gold-dark)",
           letterSpacing: "var(--tracking-widest)",
         }}

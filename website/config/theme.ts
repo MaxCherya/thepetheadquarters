@@ -1,12 +1,12 @@
 export const colors = {
   black: "#111111",
   gold: "#C6A030",
-  goldDark: "#A8872B",
+  goldDark: "#876B1E",
   goldLight: "#DEAF3A",
 
   white: "#111111",
-  whiteDim: "#333333",
-  whiteFaint: "#666666",
+  whiteDim: "#2D2D2D",
+  whiteFaint: "#555555",
 
   bgPrimary: "#F4F1EA",
   bgSecondary: "#FFFFFF",

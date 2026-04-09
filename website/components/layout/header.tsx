@@ -3,9 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, Menu, X, ArrowRight } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, ArrowRight, UserCircle, LogOut } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
+import { useAuth } from "@/lib/auth-context";
 import { CartPopup } from "./cart-popup";
 
 interface HeaderProps {
@@ -38,7 +39,10 @@ export function Header({ dict }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { totalItems, drawerOpen } = useCart();
+  const { user, isAuthenticated, logout } = useAuth();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const cartRef = useRef<HTMLDivElement>(null);
+  const userRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onScroll() {
@@ -65,9 +69,22 @@ export function Header({ dict }: HeaderProps) {
     return () => document.removeEventListener("mousedown", onClick);
   }, [cartOpen]);
 
+  // Close user menu on click outside
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    function onClick(e: MouseEvent) {
+      if (userRef.current && !userRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [userMenuOpen]);
+
   // Close popup on navigation
   useEffect(() => {
     setCartOpen(false);
+    setUserMenuOpen(false);
   }, [pathname]);
 
   // Lock body scroll when mobile menu is open
@@ -189,6 +206,67 @@ export function Header({ dict }: HeaderProps) {
             <CartPopup open={cartOpen} onClose={() => setCartOpen(false)} />
             </div>
 
+            {/* User icon */}
+            <div ref={userRef} className="relative">
+              {isAuthenticated ? (
+                <>
+                  <button
+                    onClick={() => { setUserMenuOpen(!userMenuOpen); setSearchOpen(false); setCartOpen(false); setMobileOpen(false); }}
+                    className="relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 hover:bg-[rgba(187,148,41,0.1)] hover:text-[var(--gold)]"
+                    style={{ color: userMenuOpen ? "var(--gold)" : "var(--white-dim)" }}
+                  >
+                    <UserCircle size={18} />
+                    {user && !user.is_email_verified && (
+                      <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full" style={{ background: "var(--warning)" }} />
+                    )}
+                  </button>
+                  {/* User dropdown */}
+                  <div
+                    className="absolute right-0 top-12 w-48 overflow-hidden rounded-lg transition-all duration-200"
+                    style={{
+                      background: "var(--bg-secondary)",
+                      border: "1px solid var(--bg-border)",
+                      boxShadow: "0 4px 24px rgba(0,0,0,0.1)",
+                      opacity: userMenuOpen ? 1 : 0,
+                      transform: userMenuOpen ? "translateY(0)" : "translateY(-8px)",
+                      pointerEvents: userMenuOpen ? "all" : "none",
+                    }}
+                  >
+                    <div style={{ padding: "var(--space-3) var(--space-4)", borderBottom: "1px solid var(--bg-border)" }}>
+                      <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-xs)", color: "var(--white-faint)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {user?.email}
+                      </p>
+                    </div>
+                    <Link
+                      href="/account"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex w-full items-center gap-2 px-4 py-2.5 transition-colors duration-200 hover:bg-[rgba(187,148,41,0.08)]"
+                      style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--white-dim)" }}
+                    >
+                      <UserCircle size={14} />
+                      My Account
+                    </Link>
+                    <button
+                      onClick={() => { setUserMenuOpen(false); logout(); }}
+                      className="flex w-full items-center gap-2 px-4 py-2.5 transition-colors duration-200 hover:bg-[rgba(198,40,40,0.08)]"
+                      style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--white-faint)" }}
+                    >
+                      <LogOut size={14} />
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <Link
+                  href="/account/login"
+                  className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 hover:bg-[rgba(187,148,41,0.1)] hover:text-[var(--gold)]"
+                  style={{ color: "var(--white-dim)" }}
+                >
+                  <UserCircle size={18} />
+                </Link>
+              )}
+            </div>
+
             <button
               onClick={() => { setMobileOpen(!mobileOpen); setSearchOpen(false); }}
               className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 hover:bg-[rgba(187,148,41,0.1)] lg:hidden"
@@ -305,7 +383,7 @@ export function Header({ dict }: HeaderProps) {
                 style={{
                   fontFamily: "var(--font-cormorant)",
                   fontSize: "var(--text-3xl)",
-                  fontWeight: "var(--weight-light)",
+                  fontWeight: "var(--weight-regular)",
                   color: isActive ? "var(--gold)" : "var(--white)",
                 }}
               >

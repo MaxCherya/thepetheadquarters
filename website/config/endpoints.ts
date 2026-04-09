@@ -25,4 +25,21 @@ export const endpoints = {
   contact: {
     send: `${API_BASE}/contact/`,
   },
+  auth: {
+    register: `${API_BASE}/auth/register/`,
+    login: `${API_BASE}/auth/login/`,
+    logout: `${API_BASE}/auth/logout/`,
+    refresh: `${API_BASE}/auth/token/refresh/`,
+    verifyEmail: `${API_BASE}/auth/verify-email/`,
+    resendVerification: `${API_BASE}/auth/verify-email/resend/`,
+    passwordReset: `${API_BASE}/auth/password/reset/`,
+    passwordResetConfirm: `${API_BASE}/auth/password/reset/confirm/`,
+    passwordChange: `${API_BASE}/auth/password/change/`,
+    me: `${API_BASE}/auth/me/`,
+    deleteAccount: `${API_BASE}/auth/me/delete/`,
+  },
+  addresses: {
+    list: `${API_BASE}/addresses/`,
+    detail: (id: string) => `${API_BASE}/addresses/${id}/`,
+  },
 } as const;

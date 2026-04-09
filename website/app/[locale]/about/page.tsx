@@ -28,7 +28,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             style={{
               fontFamily: "var(--font-cormorant)",
               fontSize: "clamp(2rem, 6vw, 3.5rem)",
-              fontWeight: "var(--weight-light)",
+              fontWeight: "var(--weight-regular)",
               color: "var(--white)",
               lineHeight: "var(--leading-tight)",
             }}
@@ -56,7 +56,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             style={{
               fontFamily: "var(--font-cormorant)",
               fontSize: "var(--text-3xl)",
-              fontWeight: "var(--weight-light)",
+              fontWeight: "var(--weight-regular)",
               color: "var(--white)",
             }}
             data-animate="fade-up"
@@ -112,7 +112,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             style={{
               fontFamily: "var(--font-cormorant)",
               fontSize: "var(--text-3xl)",
-              fontWeight: "var(--weight-light)",
+              fontWeight: "var(--weight-regular)",
               color: "var(--white)",
             }}
           >
@@ -146,7 +146,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             style={{
               fontFamily: "var(--font-cormorant)",
               fontSize: "var(--text-2xl)",
-              fontWeight: "var(--weight-light)",
+              fontWeight: "var(--weight-regular)",
               color: "var(--white)",
             }}
           >

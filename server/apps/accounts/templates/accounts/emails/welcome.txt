@@ -1,0 +1,7 @@
+Hello {{ user.first_name }},
+
+Your email has been verified. Welcome to {{ site_name }}!
+
+Browse our collection: {{ shop_url }}
+
+{{ site_name }}

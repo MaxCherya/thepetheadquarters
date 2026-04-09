@@ -20,13 +20,13 @@
   /* Primary */
   --black: #111111;
   --gold: #C6A030;
-  --gold-dark: #A8872B;
+  --gold-dark: #876B1E;
   --gold-light: #DEAF3A;
 
   /* Secondary (text) */
   --white: #111111;
-  --white-dim: #333333;
-  --white-faint: #666666;
+  --white-dim: #2D2D2D;
+  --white-faint: #555555;
 
   /* Backgrounds */
   --bg-primary: #F4F1EA;

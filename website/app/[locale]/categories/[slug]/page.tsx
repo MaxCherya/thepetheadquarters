@@ -55,7 +55,7 @@ export default async function CategoryDetailPage({ params }: PageProps) {
             style={{
               fontFamily: "var(--font-cormorant)",
               fontSize: "clamp(2rem, 5vw, 3rem)",
-              fontWeight: "var(--weight-light)",
+              fontWeight: "var(--weight-regular)",
               color: "var(--white)",
               letterSpacing: "var(--tracking-tight)",
             }}

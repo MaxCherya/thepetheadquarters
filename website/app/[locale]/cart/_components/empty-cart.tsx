@@ -23,7 +23,7 @@ export function EmptyCart({ dict }: EmptyCartProps) {
         style={{
           fontFamily: "var(--font-cormorant)",
           fontSize: "var(--text-2xl)",
-          fontWeight: "var(--weight-light)",
+          fontWeight: "var(--weight-regular)",
           color: "var(--white)",
         }}
       >

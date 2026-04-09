@@ -80,7 +80,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
           >
             <div
               className="flex h-12 w-12 items-center justify-center rounded-full"
-              style={{ background: "rgba(0,0,0,0.6)", color: "var(--white)" }}
+              style={{ background: "rgba(0,0,0,0.6)", color: "#FFFFFF" }}
             >
               <ZoomIn size={20} />
             </div>
@@ -123,8 +123,8 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
           {/* Close */}
           <button
             onClick={() => setFullscreen(false)}
-            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:bg-[rgba(255,255,255,0.1)]"
-            style={{ color: "var(--white)" }}
+            className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 hover:bg-[rgba(255,255,255,0.2)]"
+            style={{ color: "#FFFFFF" }}
           >
             <X size={24} />
           </button>
@@ -136,7 +136,7 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
               background: "rgba(0,0,0,0.6)",
               fontFamily: "var(--font-montserrat)",
               fontSize: "var(--text-xs)",
-              color: "var(--white-dim)",
+              color: "rgba(255,255,255,0.7)",
             }}
           >
             {activeIndex + 1} / {sorted.length}
@@ -146,8 +146,8 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
           {sorted.length > 1 && (
             <button
               onClick={goPrev}
-              className="absolute left-4 z-10 flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200 hover:bg-[rgba(255,255,255,0.1)]"
-              style={{ color: "var(--white)" }}
+              className="absolute left-4 z-10 flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200 hover:bg-[rgba(255,255,255,0.2)]"
+              style={{ color: "#FFFFFF" }}
             >
               <ChevronLeft size={28} />
             </button>
@@ -169,8 +169,8 @@ export function ImageGallery({ images, productName }: ImageGalleryProps) {
           {sorted.length > 1 && (
             <button
               onClick={goNext}
-              className="absolute right-4 z-10 flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200 hover:bg-[rgba(255,255,255,0.1)]"
-              style={{ color: "var(--white)" }}
+              className="absolute right-4 z-10 flex h-12 w-12 items-center justify-center rounded-full transition-all duration-200 hover:bg-[rgba(255,255,255,0.2)]"
+              style={{ color: "#FFFFFF" }}
             >
               <ChevronRight size={28} />
             </button>

@@ -71,7 +71,7 @@ export function ProductInfo({ product, dict }: ProductInfoProps) {
         style={{
           fontFamily: "var(--font-cormorant)",
           fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
-          fontWeight: "var(--weight-light)",
+          fontWeight: "var(--weight-regular)",
           color: "var(--white)",
           lineHeight: "var(--leading-tight)",
         }}

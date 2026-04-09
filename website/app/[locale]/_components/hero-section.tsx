@@ -41,7 +41,7 @@ export function HeroSection({ dict }: HeroSectionProps) {
             style={{
               fontFamily: "var(--font-cormorant)",
               fontSize: "clamp(2rem, 6vw, 4.5rem)",
-              fontWeight: "var(--weight-light)",
+              fontWeight: "var(--weight-regular)",
               color: "var(--white)",
               lineHeight: "var(--leading-tight)",
               letterSpacing: "var(--tracking-tight)",

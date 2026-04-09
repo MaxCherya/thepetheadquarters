@@ -50,7 +50,7 @@ export function ProductListItem({ product }: ProductListItemProps) {
             className="absolute left-2 top-2 rounded-full px-2 py-0.5"
             style={{
               background: "var(--error)",
-              color: "var(--white)",
+              color: "#FFFFFF",
               fontFamily: "var(--font-montserrat)",
               fontSize: "var(--text-xs)",
               fontWeight: "var(--weight-medium)",
