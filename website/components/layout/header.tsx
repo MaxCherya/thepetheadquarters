@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Search, ShoppingCart, Menu, X, ArrowRight } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
+import { useCart } from "@/lib/cart-context";
+import { CartPopup } from "./cart-popup";
 
 interface HeaderProps {
   dict: {
@@ -30,10 +32,13 @@ const navLinks = [
 export function Header({ dict }: HeaderProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { totalItems, drawerOpen } = useCart();
+  const cartRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onScroll() {
@@ -42,6 +47,28 @@ export function Header({ dict }: HeaderProps) {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Auto-open popup when item is added via context
+  useEffect(() => {
+    if (drawerOpen) setCartOpen(true);
+  }, [drawerOpen]);
+
+  // Close popup on click outside
+  useEffect(() => {
+    if (!cartOpen) return;
+    function onClick(e: MouseEvent) {
+      if (cartRef.current && !cartRef.current.contains(e.target as Node)) {
+        setCartOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClick);
+    return () => document.removeEventListener("mousedown", onClick);
+  }, [cartOpen]);
+
+  // Close popup on navigation
+  useEffect(() => {
+    setCartOpen(false);
+  }, [pathname]);
 
   // Lock body scroll when mobile menu is open
   useEffect(() => {
@@ -67,7 +94,7 @@ export function Header({ dict }: HeaderProps) {
       <header
         className="sticky top-0 z-50 transition-all duration-500"
         style={{
-          background: scrolled ? "rgba(10, 10, 10, 0.92)" : "transparent",
+          background: scrolled ? "rgba(244, 241, 234, 0.92)" : "transparent",
           backdropFilter: scrolled ? "blur(16px)" : "none",
           borderBottom: scrolled ? "1px solid var(--bg-border)" : "1px solid transparent",
         }}
@@ -88,8 +115,8 @@ export function Header({ dict }: HeaderProps) {
               style={{
                 fontFamily: "var(--font-cormorant)",
                 fontSize: "var(--text-lg)",
-                fontWeight: "var(--weight-light)",
-                color: "var(--gold)",
+                fontWeight: "var(--weight-medium)",
+                color: "var(--white)",
                 letterSpacing: "var(--tracking-wide)",
               }}
             >
@@ -130,23 +157,41 @@ export function Header({ dict }: HeaderProps) {
           <div className="flex items-center gap-1">
             <button
               onClick={() => { setSearchOpen(!searchOpen); setMobileOpen(false); }}
-              className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 hover:bg-[rgba(201,168,76,0.1)] hover:text-[var(--gold)]"
+              className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 hover:bg-[rgba(187,148,41,0.1)] hover:text-[var(--gold)]"
               style={{ color: searchOpen ? "var(--gold)" : "var(--white-dim)" }}
             >
               {searchOpen ? <X size={18} /> : <Search size={18} />}
             </button>
 
-            <Link
-              href="/cart"
-              className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 hover:bg-[rgba(201,168,76,0.1)] hover:text-[var(--gold)]"
-              style={{ color: "var(--white-dim)" }}
+            <div ref={cartRef} className="relative">
+            <button
+              onClick={() => { setCartOpen(!cartOpen); setSearchOpen(false); setMobileOpen(false); }}
+              className="relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 hover:bg-[rgba(187,148,41,0.1)] hover:text-[var(--gold)]"
+              style={{ color: cartOpen ? "var(--gold)" : "var(--white-dim)" }}
             >
               <ShoppingCart size={18} />
-            </Link>
+              {totalItems > 0 && (
+                <span
+                  className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full"
+                  style={{
+                    background: "var(--gold)",
+                    color: "var(--black)",
+                    fontFamily: "var(--font-montserrat)",
+                    fontSize: "10px",
+                    fontWeight: 700,
+                    lineHeight: 1,
+                  }}
+                >
+                  {totalItems > 99 ? "99+" : totalItems}
+                </span>
+              )}
+            </button>
+            <CartPopup open={cartOpen} onClose={() => setCartOpen(false)} />
+            </div>
 
             <button
               onClick={() => { setMobileOpen(!mobileOpen); setSearchOpen(false); }}
-              className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 hover:bg-[rgba(201,168,76,0.1)] lg:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 hover:bg-[rgba(187,148,41,0.1)] lg:hidden"
               style={{ color: mobileOpen ? "var(--gold)" : "var(--white-dim)" }}
             >
               <div className="relative h-4 w-5">

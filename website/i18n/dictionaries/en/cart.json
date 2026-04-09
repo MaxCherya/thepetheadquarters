@@ -1,0 +1,21 @@
+{
+  "title": "Your Cart",
+  "empty": {
+    "title": "Your cart is empty",
+    "description": "Looks like you haven't added anything yet. Explore our collection and find something special for your pet.",
+    "cta": "Start Shopping"
+  },
+  "item": {
+    "remove": "Remove",
+    "quantity": "Qty"
+  },
+  "summary": {
+    "title": "Order Summary",
+    "subtotal": "Subtotal",
+    "delivery": "Delivery",
+    "deliveryNote": "Calculated at checkout",
+    "total": "Total",
+    "checkout": "Proceed to Checkout",
+    "continueShopping": "Continue Shopping"
+  }
+}

@@ -37,7 +37,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
                 style={{
                   fontFamily: "var(--font-montserrat)",
                   fontSize: "var(--text-xs)",
-                  color: "var(--gold)",
+                  color: "var(--gold-dark)",
                   letterSpacing: "var(--tracking-wide)",
                 }}
               >

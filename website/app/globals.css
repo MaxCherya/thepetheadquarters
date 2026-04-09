@@ -5,34 +5,40 @@
  * and outside any @layer so they have highest specificity.
  */
 
-:root, .dark, [data-theme="dark"] {
-  --background: 0 0% 4% !important;
-  --foreground: 60 4% 95% !important;
+:root, .light, [data-theme="light"] {
+  --background: 40 27% 93% !important;
+  --foreground: 0 0% 10% !important;
+
+  /* HeroUI component overrides */
+  --surface: var(--bg-secondary) !important;
+  --surface-foreground: var(--white) !important;
+  --overlay: var(--bg-secondary) !important;
+  --overlay-foreground: var(--white) !important;
 }
 
 :root {
   /* Primary */
-  --black: #0A0A0A;
-  --gold: #C9A84C;
-  --gold-dark: #A67C32;
-  --gold-light: #E8C96A;
+  --black: #111111;
+  --gold: #C6A030;
+  --gold-dark: #A8872B;
+  --gold-light: #DEAF3A;
 
-  /* Secondary */
-  --white: #F5F5F0;
-  --white-dim: #D4D4CE;
-  --white-faint: #A8A8A2;
+  /* Secondary (text) */
+  --white: #111111;
+  --white-dim: #333333;
+  --white-faint: #666666;
 
   /* Backgrounds */
-  --bg-primary: #0A0A0A;
-  --bg-secondary: #111111;
-  --bg-tertiary: #1A1A1A;
-  --bg-border: #2A2A2A;
+  --bg-primary: #F4F1EA;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #EBE7DE;
+  --bg-border: #DED9CF;
 
   /* Status */
-  --success: #4CAF50;
-  --warning: #FF9800;
-  --error: #F44336;
-  --info: #2196F3;
+  --success: #2E7D32;
+  --warning: #E65100;
+  --error: #C62828;
+  --info: #1565C0;
 
   /* Typography */
   --text-xs: 0.75rem;
@@ -90,22 +96,83 @@
   --radius-full: 9999px;
 }
 
+/* Toast overrides — match brand palette */
+html .toast-region .toast {
+  background-color: var(--bg-secondary) !important;
+  border: 1px solid var(--bg-border) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1), 0 1px 4px rgba(0, 0, 0, 0.06) !important;
+  font-family: var(--font-montserrat) !important;
+  --tw-shadow: none !important;
+  --tw-bg-opacity: 1 !important;
+}
+
+html .toast-region .toast .toast__title {
+  font-family: var(--font-montserrat) !important;
+  font-weight: var(--weight-medium) !important;
+  color: var(--white) !important;
+}
+
+html .toast-region .toast .toast__description {
+  font-family: var(--font-montserrat) !important;
+  color: var(--white-dim) !important;
+}
+
+html .toast-region .toast.toast--success .toast__title,
+html .toast-region .toast.toast--success .toast__indicator {
+  color: var(--success) !important;
+}
+
+html .toast-region .toast.toast--warning .toast__title,
+html .toast-region .toast.toast--warning .toast__indicator {
+  color: var(--warning) !important;
+}
+
+html .toast-region .toast.toast--danger .toast__title,
+html .toast-region .toast.toast--danger .toast__indicator {
+  color: var(--error) !important;
+}
+
+html .toast-region .toast .toast__close-button {
+  background: var(--bg-tertiary) !important;
+  border-color: var(--bg-border) !important;
+  color: var(--white-faint) !important;
+}
+
+html .toast-region .toast .toast__close-button:hover,
+html .toast-region .toast .toast__close-button[data-hovered="true"] {
+  background: var(--bg-border) !important;
+  color: var(--white) !important;
+}
+
 /* Smooth hover transitions for all interactive elements */
 a, button, [role="button"], .cursor-pointer,
 input, select, textarea {
   transition: all 0.3s ease !important;
 }
 
+/* Primary CTA button */
+html .btn-gold {
+  background: linear-gradient(to bottom, var(--gold-light), var(--gold)) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(187, 148, 41, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+
+html .btn-gold:hover {
+  box-shadow: 0 4px 20px rgba(187, 148, 41, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
 /* Card hover effect */
 html .card-hover {
   border: 1px solid var(--bg-border) !important;
-  box-shadow: 0 8px 30px rgba(201, 168, 76, 0) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04) !important;
   transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease !important;
 }
 
 html .card-hover:hover {
   border-color: var(--gold) !important;
-  box-shadow: 0 8px 30px rgba(201, 168, 76, 0.2) !important;
+  box-shadow: 0 8px 30px rgba(168, 135, 43, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06) !important;
   transform: translateY(-4px) !important;
 }
 
@@ -232,13 +299,13 @@ html.page-loading body {
 
 /* Base — force our brand colors */
 html {
-  background-color: #0A0A0A !important;
-  color: #F5F5F0 !important;
+  background-color: var(--bg-primary) !important;
+  color: var(--white) !important;
 }
 
 body {
-  background-color: #0A0A0A !important;
-  color: #F5F5F0 !important;
+  background-color: var(--bg-primary) !important;
+  color: var(--white) !important;
   font-family: var(--font-montserrat), sans-serif;
   font-weight: var(--weight-regular);
   line-height: var(--leading-normal);
@@ -252,7 +319,7 @@ body {
 input:focus, textarea:focus, select:focus {
   border-color: var(--gold) !important;
   outline: none !important;
-  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(168, 135, 43, 0.2) !important;
 }
 
 select option {
@@ -265,7 +332,7 @@ input[type="checkbox"] {
 }
 
 ::selection {
-  background: rgba(201, 168, 76, 0.3);
+  background: rgba(168, 135, 43, 0.3);
   color: var(--white);
 }
 
@@ -345,7 +412,7 @@ input[type="checkbox"] {
 
 /* Gold glow hover */
 .gold-glow:hover {
-  box-shadow: 0 0 20px rgba(201, 168, 76, 0.4);
+  box-shadow: 0 0 20px rgba(168, 135, 43, 0.4);
 }
 
 /* Fade in */

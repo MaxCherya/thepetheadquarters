@@ -59,7 +59,7 @@ export default async function BrandsPage({
                     width={200}
                     height={80}
                     className="h-12 w-auto object-contain transition-all duration-300 group-hover:scale-105 sm:h-16"
-                    style={{ filter: "brightness(0) invert(1)" }}
+                    style={{ filter: "brightness(0)" }}
                     loading="lazy"
                   />
                 ) : (

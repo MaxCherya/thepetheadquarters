@@ -24,9 +24,9 @@ export function HeroSection({ dict }: HeroSectionProps) {
           <span
             className="mb-4 inline-block rounded-full px-3 py-1 sm:mb-6 sm:px-4 sm:py-1.5"
             style={{
-              background: "rgba(201,168,76,0.15)",
-              color: "var(--gold)",
-              border: "1px solid rgba(201,168,76,0.3)",
+              background: "rgba(187,148,41,0.15)",
+              color: "var(--gold-dark)",
+              border: "1px solid rgba(187,148,41,0.4)",
               fontFamily: "var(--font-montserrat)",
               fontSize: "var(--text-xs)",
               letterSpacing: "var(--tracking-widest)",
@@ -65,10 +65,8 @@ export function HeroSection({ dict }: HeroSectionProps) {
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <Link
               href="/products"
-              className="inline-block text-center transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(201,168,76,0.4)]"
+              className="btn-gold inline-block text-center transition-all duration-300 hover:-translate-y-0.5"
               style={{
-                background: "var(--gold)",
-                color: "var(--black)",
                 fontFamily: "var(--font-montserrat)",
                 fontWeight: "var(--weight-semibold)",
                 fontSize: "var(--text-sm)",
@@ -83,7 +81,7 @@ export function HeroSection({ dict }: HeroSectionProps) {
 
             <Link
               href="/categories"
-              className="inline-block text-center transition-all duration-300 hover:-translate-y-0.5 hover:bg-[var(--gold)] hover:text-[var(--black)] hover:shadow-[0_4px_20px_rgba(201,168,76,0.4)]"
+              className="inline-block text-center transition-all duration-300 hover:-translate-y-0.5 hover:bg-[var(--gold)] hover:text-white hover:shadow-[0_4px_20px_rgba(187,148,41,0.4)]"
               style={{
                 background: "transparent",
                 color: "var(--gold)",

@@ -95,7 +95,7 @@ export function NewsletterSection({ dict }: NewsletterSectionProps) {
             fontSize: "var(--text-xs)",
             letterSpacing: "var(--tracking-widest)",
             textTransform: "uppercase",
-            color: "var(--gold)",
+            color: "var(--gold-dark)",
           }}
         >
           {dict.label}
@@ -142,8 +142,8 @@ export function NewsletterSection({ dict }: NewsletterSectionProps) {
               disabled={isSubmitting}
               className="flex-1 outline-none transition-colors duration-300 focus:border-[var(--gold)]"
               style={{
-                background: "var(--bg-tertiary)",
-                border: `1px solid ${errors.email ? "var(--error)" : "var(--bg-border)"}`,
+                background: "var(--bg-secondary)",
+                border: `1.5px solid ${errors.email ? "var(--error)" : "var(--bg-border)"}`,
                 color: "var(--white)",
                 fontFamily: "var(--font-montserrat)",
                 borderRadius: "var(--radius-md)",
@@ -154,10 +154,8 @@ export function NewsletterSection({ dict }: NewsletterSectionProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="shrink-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(201,168,76,0.4)]"
+              className="btn-gold shrink-0 transition-all duration-300 hover:-translate-y-0.5"
               style={{
-                background: "var(--gold)",
-                color: "var(--black)",
                 fontFamily: "var(--font-montserrat)",
                 fontWeight: "var(--weight-semibold)",
                 fontSize: "var(--text-sm)",

@@ -24,7 +24,7 @@ export function CategoriesSection({ dict, categories }: CategoriesSectionProps) 
               fontSize: "var(--text-xs)",
               letterSpacing: "var(--tracking-widest)",
               textTransform: "uppercase",
-              color: "var(--gold)",
+              color: "var(--gold-dark)",
             }}
           >
             {dict.label}

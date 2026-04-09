@@ -24,7 +24,7 @@ export function BrandsSection({ dict, brands }: BrandsSectionProps) {
               fontSize: "var(--text-xs)",
               letterSpacing: "var(--tracking-widest)",
               textTransform: "uppercase",
-              color: "var(--gold)",
+              color: "var(--gold-dark)",
             }}
           >
             {dict.label}
@@ -62,7 +62,7 @@ export function BrandsSection({ dict, brands }: BrandsSectionProps) {
                   width={200}
                   height={80}
                   className="h-8 w-auto object-contain sm:h-12"
-                  style={{ filter: "brightness(0) invert(1)" }}
+                  style={{ filter: "brightness(0)" }}
                 />
               ) : (
                 <span

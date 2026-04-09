@@ -1,22 +1,22 @@
 export const colors = {
-  black: "#0A0A0A",
-  gold: "#C9A84C",
-  goldDark: "#A67C32",
-  goldLight: "#E8C96A",
+  black: "#111111",
+  gold: "#C6A030",
+  goldDark: "#A8872B",
+  goldLight: "#DEAF3A",
 
-  white: "#F5F5F0",
-  whiteDim: "#D4D4CE",
-  whiteFaint: "#A8A8A2",
+  white: "#111111",
+  whiteDim: "#333333",
+  whiteFaint: "#666666",
 
-  bgPrimary: "#0A0A0A",
-  bgSecondary: "#111111",
-  bgTertiary: "#1A1A1A",
-  bgBorder: "#2A2A2A",
+  bgPrimary: "#F4F1EA",
+  bgSecondary: "#FFFFFF",
+  bgTertiary: "#EBE7DE",
+  bgBorder: "#DED9CF",
 
-  success: "#4CAF50",
-  warning: "#FF9800",
-  error: "#F44336",
-  info: "#2196F3",
+  success: "#2E7D32",
+  warning: "#E65100",
+  error: "#C62828",
+  info: "#1565C0",
 } as const;
 
 export const fonts = {

@@ -18,7 +18,12 @@ export function ScrollAnimations() {
     window.scrollTo(0, 0);
     observerRef.current?.disconnect();
 
+    const revealed = new WeakSet<Element>();
+
     const reveal = (el: Element) => {
+      if (revealed.has(el)) return;
+      revealed.add(el);
+
       const htmlEl = el as HTMLElement;
       if (htmlEl.getAttribute("data-animate") === "stagger") {
         Array.from(htmlEl.children).forEach((child, i) => {
@@ -33,67 +38,43 @@ export function ScrollAnimations() {
       }
     };
 
-    const setup = () => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            reveal(entry.target);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0, rootMargin: "0px 0px 50px 0px" },
+    );
+    observerRef.current = observer;
+
+    const processElements = () => {
       const elements = document.querySelectorAll("[data-animate]");
-      if (elements.length === 0) return;
-
       elements.forEach((el) => {
-        const h = el as HTMLElement;
-        h.style.removeProperty("opacity");
-        h.style.removeProperty("transform");
-        if (h.getAttribute("data-animate") === "stagger") {
-          Array.from(h.children).forEach((c) => {
-            (c as HTMLElement).style.removeProperty("opacity");
-            (c as HTMLElement).style.removeProperty("transform");
-          });
-        }
-      });
+        if (revealed.has(el)) return;
 
-      void document.body.offsetHeight;
-
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              reveal(entry.target);
-              observerRef.current?.unobserve(entry.target);
-            }
-          });
-        },
-        { threshold: 0, rootMargin: "0px 0px 50px 0px" },
-      );
-
-      elements.forEach((el) => {
         const rect = el.getBoundingClientRect();
         if (rect.top < window.innerHeight + 50 && rect.bottom > 0) {
-          setTimeout(() => reveal(el), 50);
+          reveal(el);
         } else {
-          observerRef.current?.observe(el);
+          observer.observe(el);
         }
       });
     };
 
-    const t1 = setTimeout(setup, 100);
-    const t2 = setTimeout(setup, 400);
+    const timer = setTimeout(processElements, 100);
 
     const mo = new MutationObserver(() => {
-      document.querySelectorAll("[data-animate]").forEach((el) => {
-        if ((el as HTMLElement).style.opacity !== "1") {
-          const rect = el.getBoundingClientRect();
-          if (rect.top < window.innerHeight + 50 && rect.bottom > 0) {
-            reveal(el);
-          } else {
-            observerRef.current?.observe(el);
-          }
-        }
-      });
+      processElements();
     });
-    mo.observe(document.body, { childList: true, subtree: true });
+    mo.observe(document.body, { childList: true, subtree: true, attributes: false });
 
     return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      observerRef.current?.disconnect();
+      clearTimeout(timer);
+      observer.disconnect();
       mo.disconnect();
     };
   }, [pathname, mounted]);

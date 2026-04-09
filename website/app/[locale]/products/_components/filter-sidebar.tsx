@@ -68,7 +68,7 @@ export function FilterSidebar({
             style={{
               fontFamily: "var(--font-montserrat)",
               fontSize: "var(--text-xs)",
-              color: "var(--gold)",
+              color: "var(--gold-dark)",
               letterSpacing: "var(--tracking-wider)",
               textTransform: "uppercase",
             }}

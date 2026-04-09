@@ -73,7 +73,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               <div key={item.label} className="flex items-start gap-3">
                 <div
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-                  style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)" }}
+                  style={{ background: "rgba(187,148,41,0.1)", border: "1px solid rgba(187,148,41,0.2)" }}
                 >
                   <item.icon size={16} style={{ color: "var(--gold)" }} />
                 </div>

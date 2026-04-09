@@ -31,8 +31,8 @@ export function StarRating({
               {/* Empty star (background) */}
               <Star
                 size={size}
-                style={{ color: "var(--bg-border)" }}
-                fill="var(--bg-border)"
+                style={{ color: "#CBC5B8" }}
+                fill="#CBC5B8"
                 className="absolute inset-0"
               />
               {/* Filled or half star */}
@@ -59,7 +59,7 @@ export function StarRating({
             fontFamily: "var(--font-montserrat)",
             fontSize: size <= 14 ? "var(--text-xs)" : "var(--text-sm)",
             fontWeight: 600,
-            color: "var(--gold)",
+            color: "var(--gold-dark)",
           }}
         >
           {rating.toFixed(1)}

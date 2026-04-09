@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "@heroui/react";
 import { ShoppingCart, Minus, Plus } from "lucide-react";
 import { StarRating } from "@/components/ui/star-rating";
+import { useCart } from "@/lib/cart-context";
 import { VariantSelector } from "./variant-selector";
 import type { ProductDetail } from "@/types/product";
 
@@ -31,6 +32,7 @@ export function ProductInfo({ product, dict }: ProductInfoProps) {
     variants.length === 1 ? variants[0].id : null,
   );
   const [quantity, setQuantity] = useState(1);
+  const { addItem } = useCart();
 
   const selectedVariant = variants.find((v) => v.id === selectedVariantId);
 
@@ -39,8 +41,19 @@ export function ProductInfo({ product, dict }: ProductInfoProps) {
       toast.warning(dict.selectVariant);
       return;
     }
-    // TODO: integrate with cart
+    addItem({
+      productId: product.id,
+      variantId: selectedVariant.id,
+      name: product.name,
+      image: product.primary_image,
+      price: selectedVariant.price,
+      sku: selectedVariant.sku,
+      optionLabel: selectedVariant.option_values.map((ov) => ov.value).join(" / "),
+      slug: product.slug,
+      quantity,
+    });
     toast.success(`${product.name} added to cart`);
+    setQuantity(1);
   }
 
   const stockStatus = selectedVariant
@@ -104,7 +117,7 @@ export function ProductInfo({ product, dict }: ProductInfoProps) {
                 <span
                   className="rounded-full px-2 py-0.5"
                   style={{
-                    background: "rgba(201,168,76,0.15)",
+                    background: "rgba(187,148,41,0.15)",
                     color: "var(--gold)",
                     fontFamily: "var(--font-montserrat)",
                     fontSize: "var(--text-xs)",
@@ -234,10 +247,8 @@ export function ProductInfo({ product, dict }: ProductInfoProps) {
         <button
           onClick={handleAddToCart}
           disabled={stockStatus === "out"}
-          className="flex flex-1 items-center justify-center gap-2 rounded-md py-3 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(201,168,76,0.4)] disabled:opacity-40 disabled:hover:translate-y-0"
+          className="btn-gold flex flex-1 items-center justify-center gap-2 rounded-md py-3 transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0"
           style={{
-            background: "var(--gold)",
-            color: "var(--black)",
             fontFamily: "var(--font-montserrat)",
             fontWeight: "var(--weight-semibold)",
             fontSize: "var(--text-sm)",

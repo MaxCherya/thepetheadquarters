@@ -73,7 +73,7 @@ export function PageLoader() {
           fontFamily: "var(--font-cormorant)",
           fontSize: "var(--text-xl)",
           fontWeight: "var(--weight-light)",
-          color: "var(--gold)",
+          color: "var(--gold-dark)",
           letterSpacing: "var(--tracking-widest)",
         }}
       >

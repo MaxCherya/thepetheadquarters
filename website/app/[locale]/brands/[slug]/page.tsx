@@ -62,7 +62,7 @@ export default async function BrandDetailPage({ params }: PageProps) {
                 width={200}
                 height={80}
                 className="h-10 w-auto object-contain sm:h-14"
-                style={{ filter: "brightness(0) invert(1)" }}
+                style={{ filter: "brightness(0)" }}
               />
             </div>
           )}

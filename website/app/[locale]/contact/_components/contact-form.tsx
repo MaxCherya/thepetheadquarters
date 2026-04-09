@@ -120,10 +120,8 @@ export function ContactForm({ dict }: ContactFormProps) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="self-start transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(201,168,76,0.4)] disabled:opacity-50"
+        className="btn-gold self-start transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50"
         style={{
-          background: "var(--gold)",
-          color: "var(--black)",
           fontFamily: "var(--font-montserrat)",
           fontWeight: "var(--weight-semibold)",
           fontSize: "var(--text-sm)",

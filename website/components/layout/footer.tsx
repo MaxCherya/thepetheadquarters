@@ -54,7 +54,7 @@ export function Footer({ dict, navDict }: FooterProps) {
   ];
 
   return (
-    <footer style={{ background: "var(--bg-secondary)" }}>
+    <footer style={{ background: "var(--bg-tertiary)", borderTop: "1px solid var(--bg-border)" }}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div style={{ height: 1, background: "var(--bg-border)" }} />
       </div>
@@ -75,8 +75,8 @@ export function Footer({ dict, navDict }: FooterProps) {
                 style={{
                   fontFamily: "var(--font-cormorant)",
                   fontSize: "var(--text-2xl)",
-                  fontWeight: "var(--weight-light)",
-                  color: "var(--gold)",
+                  fontWeight: "var(--weight-medium)",
+                  color: "var(--white)",
                   letterSpacing: "var(--tracking-wide)",
                 }}
               >
@@ -122,7 +122,7 @@ export function Footer({ dict, navDict }: FooterProps) {
                   fontFamily: "var(--font-montserrat)",
                   fontSize: "var(--text-xs)",
                   fontWeight: "var(--weight-semibold)",
-                  color: "var(--gold)",
+                  color: "var(--gold-dark)",
                   letterSpacing: "var(--tracking-widest)",
                   textTransform: "uppercase",
                 }}

@@ -21,7 +21,7 @@ export function TrustSignalsSection({ dict }: TrustSignalsSectionProps) {
               fontSize: "var(--text-xs)",
               letterSpacing: "var(--tracking-widest)",
               textTransform: "uppercase",
-              color: "var(--gold)",
+              color: "var(--gold-dark)",
             }}
           >
             {dict.label}
@@ -36,8 +36,8 @@ export function TrustSignalsSection({ dict }: TrustSignalsSectionProps) {
                 <div
                   className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full sm:mb-4 sm:h-14 sm:w-14"
                   style={{
-                    background: "rgba(201,168,76,0.1)",
-                    border: "1px solid rgba(201,168,76,0.2)",
+                    background: "rgba(187,148,41,0.15)",
+                    border: "1.5px solid rgba(187,148,41,0.35)",
                   }}
                 >
                   <Icon className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: "var(--gold)" }} />

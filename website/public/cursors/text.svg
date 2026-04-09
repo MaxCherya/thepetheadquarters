@@ -1,10 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-  <!-- Dark outline -->
-  <line x1="12" y1="3" x2="12" y2="21" stroke="#0A0A0A" stroke-width="4" stroke-linecap="round"/>
-  <line x1="8" y1="3" x2="16" y2="3" stroke="#0A0A0A" stroke-width="4" stroke-linecap="round"/>
-  <line x1="8" y1="21" x2="16" y2="21" stroke="#0A0A0A" stroke-width="4" stroke-linecap="round"/>
-  <!-- Gold -->
-  <line x1="12" y1="3" x2="12" y2="21" stroke="#C9A84C" stroke-width="2" stroke-linecap="round"/>
-  <line x1="8" y1="3" x2="16" y2="3" stroke="#C9A84C" stroke-width="2" stroke-linecap="round"/>
-  <line x1="8" y1="21" x2="16" y2="21" stroke="#C9A84C" stroke-width="2" stroke-linecap="round"/>
+  <line x1="12" y1="3" x2="12" y2="21" stroke="#1A1A1A" stroke-width="4" stroke-linecap="round"/>
+  <line x1="8" y1="3" x2="16" y2="3" stroke="#1A1A1A" stroke-width="4" stroke-linecap="round"/>
+  <line x1="8" y1="21" x2="16" y2="21" stroke="#1A1A1A" stroke-width="4" stroke-linecap="round"/>
+  <line x1="12" y1="3" x2="12" y2="21" stroke="#D4AA35" stroke-width="2" stroke-linecap="round"/>
+  <line x1="8" y1="3" x2="16" y2="3" stroke="#D4AA35" stroke-width="2" stroke-linecap="round"/>
+  <line x1="8" y1="21" x2="16" y2="21" stroke="#D4AA35" stroke-width="2" stroke-linecap="round"/>
 </svg>

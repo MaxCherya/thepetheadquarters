@@ -74,7 +74,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
                 >
                   <div
                     className="mb-4 flex h-12 w-12 items-center justify-center rounded-full"
-                    style={{ background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.2)" }}
+                    style={{ background: "rgba(187,148,41,0.1)", border: "1px solid rgba(187,148,41,0.2)" }}
                   >
                     <Icon size={20} style={{ color: "var(--gold)" }} />
                   </div>
@@ -160,10 +160,8 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
           </p>
           <Link
             href="/products"
-            className="inline-block transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_4px_20px_rgba(201,168,76,0.4)]"
+            className="btn-gold inline-block transition-all duration-300 hover:-translate-y-0.5"
             style={{
-              background: "var(--gold)",
-              color: "var(--black)",
               fontFamily: "var(--font-montserrat)",
               fontWeight: "var(--weight-semibold)",
               fontSize: "var(--text-sm)",

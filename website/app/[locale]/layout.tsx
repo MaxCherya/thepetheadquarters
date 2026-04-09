@@ -97,7 +97,7 @@ export default async function LocaleLayout({
   const common = await getDictionary(locale as Locale, "common");
 
   return (
-    <html lang={locale} className={`dark page-loading ${cormorant.variable} ${montserrat.variable}`}>
+    <html lang={locale} className={`light page-loading ${cormorant.variable} ${montserrat.variable}`}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -107,9 +107,11 @@ export default async function LocaleLayout({
       </head>
       <body>
           <PageLoader />
-          <Header dict={common.nav} />
-          <Providers>{children}</Providers>
-          <Footer dict={common.footer} navDict={common.nav} />
+          <Providers>
+            <Header dict={common.nav} />
+            {children}
+            <Footer dict={common.footer} navDict={common.nav} />
+          </Providers>
           <ToastContainer />
           <ScrollAnimations />
         </body>
