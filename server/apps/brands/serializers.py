@@ -29,7 +29,10 @@ class BrandDetailSerializer(BrandListSerializer):
     description = serializers.SerializerMethodField()
 
     class Meta(BrandListSerializer.Meta):
-        fields = ["id", "slug", "name", "description", "logo", "website", "translations"]
+        fields = [
+            "id", "slug", "name", "description", "logo", "website",
+            "meta_title", "meta_description", "translations",
+        ]
 
     def get_description(self, obj) -> str:
         lang = self.context.get("language", "en")

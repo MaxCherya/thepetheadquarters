@@ -6,9 +6,11 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 
 import { CartContent } from "./_components/cart-content";
 
+// Per-customer state — never index
 export const metadata: Metadata = {
   title: "Your Cart",
   description: "Review your cart and proceed to checkout.",
+  robots: { index: false, follow: false },
 };
 
 export default async function CartPage({ params }: { params: Promise<{ locale: Locale }> }) {

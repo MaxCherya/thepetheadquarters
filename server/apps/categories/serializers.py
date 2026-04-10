@@ -27,19 +27,30 @@ class CategoryListSerializer(serializers.ModelSerializer):
 class CategoryDetailSerializer(CategoryListSerializer):
     translations = CategoryTranslationSerializer(many=True, read_only=True)
     children = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
 
     class Meta(CategoryListSerializer.Meta):
         fields = [
             "id",
             "slug",
             "name",
+            "description",
             "image",
             "depth",
             "parent",
             "path",
+            "meta_title",
+            "meta_description",
             "translations",
             "children",
         ]
+
+    def get_description(self, obj) -> str:
+        lang = self.context.get("language", "en")
+        translation = obj.translations.filter(language=lang).first()
+        if not translation:
+            translation = obj.translations.filter(language="en").first()
+        return translation.description if translation else ""
 
     def get_children(self, obj):
         active_children = obj.children.filter(is_active=True)

@@ -6,6 +6,8 @@ from apps.core.models import BaseModel, TranslationBaseModel, SlugMixin, Sortabl
 class Brand(BaseModel, SlugMixin, SortableMixin, ActivatableMixin):
     logo = models.URLField(max_length=500, blank=True, default="")
     website = models.URLField(max_length=500, blank=True, default="")
+    meta_title = models.CharField(max_length=255, blank=True, default="")
+    meta_description = models.CharField(max_length=500, blank=True, default="")
 
     class Meta(BaseModel.Meta):
         ordering = ["sort_order"]

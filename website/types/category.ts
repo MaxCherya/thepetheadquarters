@@ -9,6 +9,9 @@ export interface Category {
 
 export interface CategoryDetail extends Category {
   path: string;
+  description: string;
+  meta_title: string;
+  meta_description: string;
   translations: CategoryTranslation[];
   children: Category[];
 }

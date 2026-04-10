@@ -8,6 +8,8 @@ export interface Brand {
 export interface BrandDetail extends Brand {
   description: string;
   website: string;
+  meta_title: string;
+  meta_description: string;
   translations: BrandTranslation[];
 }
 

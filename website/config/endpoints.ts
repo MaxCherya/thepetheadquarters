@@ -15,6 +15,12 @@ export const endpoints = {
     featured: `${API_BASE}/products/featured/`,
     detail: (slug: string) => `${API_BASE}/products/${slug}/`,
   },
+  seo: {
+    sitemapSlugs: `${API_BASE}/sitemap/slugs/`,
+    redirectProduct: (slug: string) => `${API_BASE}/redirect/products/${slug}/`,
+    redirectCategory: (slug: string) => `${API_BASE}/redirect/categories/${slug}/`,
+    redirectBrand: (slug: string) => `${API_BASE}/redirect/brands/${slug}/`,
+  },
   attributes: {
     list: `${API_BASE}/attributes/`,
     byProduct: (productId: string) => `${API_BASE}/attributes/product/${productId}/`,

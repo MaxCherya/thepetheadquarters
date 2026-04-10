@@ -23,6 +23,7 @@ class AdminBrandSerializer(serializers.ModelSerializer):
         fields = [
             "id", "slug", "name", "description",
             "logo", "website", "sort_order", "is_active",
+            "meta_title", "meta_description",
         ]
 
     def get_name(self, obj):
@@ -43,6 +44,7 @@ class AdminCategorySerializer(serializers.ModelSerializer):
         fields = [
             "id", "slug", "name", "description", "image",
             "parent", "depth", "path", "sort_order", "is_active",
+            "meta_title", "meta_description",
         ]
 
     def get_name(self, obj):
@@ -92,9 +94,16 @@ class AdminBrandDetailView(AdminBaseView):
         if not brand:
             return error_response("admin.brands.not_found", status_code=404)
 
-        for field in ["logo", "website", "sort_order", "is_active"]:
+        for field in ["logo", "website", "sort_order", "is_active", "meta_title", "meta_description"]:
             if field in request.data:
                 setattr(brand, field, request.data[field])
+
+        # Allow renaming the slug; SlugMixin records the old one in
+        # SlugHistory automatically so external links keep working.
+        if "slug" in request.data:
+            new_slug = (request.data.get("slug") or "").strip()
+            if new_slug:
+                brand.slug = new_slug
 
         if "name" in request.data or "description" in request.data:
             t, _ = BrandTranslation.objects.get_or_create(
@@ -157,9 +166,16 @@ class AdminCategoryDetailView(AdminBaseView):
         if not category:
             return error_response("admin.categories.not_found", status_code=404)
 
-        for field in ["image", "sort_order", "is_active", "parent_id"]:
+        for field in ["image", "sort_order", "is_active", "parent_id", "meta_title", "meta_description"]:
             if field in request.data:
                 setattr(category, field, request.data[field])
+
+        # Allow renaming the slug; SlugMixin records the old one in
+        # SlugHistory automatically so external links keep working.
+        if "slug" in request.data:
+            new_slug = (request.data.get("slug") or "").strip()
+            if new_slug:
+                category.slug = new_slug
 
         if "name" in request.data or "description" in request.data:
             t, _ = CategoryTranslation.objects.get_or_create(

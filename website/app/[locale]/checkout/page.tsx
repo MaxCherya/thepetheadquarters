@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
+
 import { getDictionary } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/config";
 import { isValidLocale } from "@/i18n/config";
 import { notFound } from "next/navigation";
 import { CheckoutContent } from "./_components/checkout-content";
+
+// Per-customer flow — never index, never follow
+export const metadata: Metadata = {
+  title: "Checkout",
+  robots: { index: false, follow: false },
+};
 
 export default async function CheckoutPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;

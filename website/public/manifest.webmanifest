@@ -1,0 +1,25 @@
+{
+  "name": "The Pet Headquarters",
+  "short_name": "Pet HQ",
+  "description": "Premium pet food, accessories and supplies. Free UK delivery on orders over £30.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0F12",
+  "theme_color": "#0F0F12",
+  "icons": [
+    {
+      "src": "/img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["shopping", "lifestyle"],
+  "lang": "en-GB"
+}

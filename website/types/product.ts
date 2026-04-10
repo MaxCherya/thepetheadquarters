@@ -8,15 +8,23 @@ export interface Product {
   average_rating: number;
   review_count: number;
   primary_image: string | null;
+  primary_image_alt: string;
   min_price: number | null;
   max_price: number | null;
   in_stock: boolean;
+}
+
+export interface ProductBrandRef {
+  id: string;
+  slug: string;
+  name: string;
 }
 
 export interface ProductDetail extends Product {
   description: string;
   meta_title: string;
   meta_description: string;
+  brand: ProductBrandRef | null;
   translations: ProductTranslation[];
   variants: ProductVariant[];
   images: ProductImage[];

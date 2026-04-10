@@ -14,6 +14,8 @@ class Category(BaseModel, SlugMixin, SortableMixin, ActivatableMixin):
     image = models.URLField(max_length=500, blank=True, default="")
     depth = models.PositiveSmallIntegerField(default=0, db_index=True)
     path = models.CharField(max_length=1000, blank=True, default="")
+    meta_title = models.CharField(max_length=255, blank=True, default="")
+    meta_description = models.CharField(max_length=500, blank=True, default="")
 
     class Meta(BaseModel.Meta):
         verbose_name_plural = "categories"

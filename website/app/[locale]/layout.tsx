@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Montserrat } from "next/font/google";
 
 import { isValidLocale, locales, siteUrl, defaultLocale } from "@/i18n/config";
@@ -28,6 +28,18 @@ const montserrat = Montserrat({
   display: "swap",
 });
 
+// Centralised OG image — used as the fallback for any page that doesn't
+// override it with a more specific image (product photo, brand logo, etc.).
+const DEFAULT_OG_IMAGE = `${siteUrl}/img/og-default.png`;
+
+export const viewport: Viewport = {
+  themeColor: "#0F0F12",
+  width: "device-width",
+  initialScale: 1,
+  // Allow user zoom — important for accessibility on iOS Safari
+  maximumScale: 5,
+};
+
 export async function generateMetadata({
   params,
 }: {
@@ -46,19 +58,49 @@ export async function generateMetadata({
       icon: "/img/logo.png",
       apple: "/img/logo.png",
     },
+    manifest: "/manifest.webmanifest",
     title: {
       template: "%s | The Pet Headquarters",
-      default: "The Pet Headquarters",
+      default: "The Pet Headquarters — Premium Pet Supplies in the UK",
     },
     description:
-      "Premium pet products for your beloved companions. Quality supplies, food, and accessories.",
+      "Shop premium pet food, accessories, toys and supplies for dogs, cats and small animals. Free UK delivery on orders over £30.",
+    keywords: [
+      "pet supplies UK",
+      "pet food",
+      "dog accessories",
+      "cat accessories",
+      "premium pet products",
+    ],
+    applicationName: "The Pet Headquarters",
+    authors: [{ name: "The Pet Headquarters" }],
+    creator: "The Pet Headquarters",
+    publisher: "The Pet Headquarters",
+    formatDetection: {
+      email: false,
+      telephone: false,
+      address: false,
+    },
     openGraph: {
       type: "website",
       locale: locale,
       siteName: "The Pet Headquarters",
+      url: siteUrl,
+      images: [
+        {
+          url: DEFAULT_OG_IMAGE,
+          width: 1200,
+          height: 630,
+          alt: "The Pet Headquarters",
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
+      title: "The Pet Headquarters — Premium Pet Supplies",
+      description:
+        "Shop premium pet food, accessories, toys and supplies. Free UK delivery on orders over £30.",
+      images: [DEFAULT_OG_IMAGE],
     },
     robots: {
       index: true,
@@ -72,6 +114,7 @@ export async function generateMetadata({
       },
     },
     alternates: {
+      canonical: siteUrl,
       languages,
     },
   };
