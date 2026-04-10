@@ -14,6 +14,7 @@ import {
   useToggleHelpful,
   useUpdateReview,
 } from "@/hooks/use-reviews";
+import { useAuth } from "@/lib/auth-context";
 import type { Review, ReviewSort } from "@/types/review";
 
 interface ReviewsTabProps {
@@ -35,7 +36,34 @@ function formatDate(iso: string): string {
   });
 }
 
+// Anonymous helpful-vote tracking — server can't tie an anonymous click
+// back to a person, so we keep visual feedback on the device via localStorage.
+// Authenticated users get the proper per-user state from the API and these
+// helpers are not consulted for them.
+const HELPFUL_STORAGE_KEY = "tph-helpful-votes";
+
+function loadAnonHelpfulVotes(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(HELPFUL_STORAGE_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function saveAnonHelpfulVotes(votes: Set<string>) {
+  try {
+    localStorage.setItem(HELPFUL_STORAGE_KEY, JSON.stringify(Array.from(votes)));
+  } catch {
+    // ignore quota / private mode failures
+  }
+}
+
 export function ReviewsTab({ slug }: ReviewsTabProps) {
+  const { isAuthenticated } = useAuth();
   const [sort, setSort] = useState<ReviewSort>("newest");
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -52,6 +80,47 @@ export function ReviewsTab({ slug }: ReviewsTabProps) {
   const helpfulMutation = useToggleHelpful(slug);
   const updateMutation = useUpdateReview(slug, editing?.id || "");
   const [submitting, setSubmitting] = useState(false);
+
+  // Anonymous helpful-vote state. Lazy initializer reads localStorage on the
+  // very first render so the gold state is visible immediately, with no
+  // initial flash of un-voted. Safe because the parent ProductTabs starts
+  // on the "description" tab, so this component only mounts client-side
+  // after hydration.
+  const [anonHelpfulVotes, setAnonHelpfulVotes] = useState<Set<string>>(
+    () => loadAnonHelpfulVotes(),
+  );
+
+  function recordAnonVote(reviewId: string) {
+    setAnonHelpfulVotes((prev) => {
+      const next = new Set(prev);
+      next.add(reviewId);
+      saveAnonHelpfulVotes(next);
+      return next;
+    });
+  }
+
+  // Optimistic state: every review id the user has clicked in this session.
+  // Used to give instant visual feedback (button turns gold + count bumps)
+  // without waiting for the server round-trip + refetch.
+  const [optimisticVotes, setOptimisticVotes] = useState<Set<string>>(new Set());
+
+  function markOptimistic(reviewId: string) {
+    setOptimisticVotes((prev) => {
+      if (prev.has(reviewId)) return prev;
+      const next = new Set(prev);
+      next.add(reviewId);
+      return next;
+    });
+  }
+
+  function clearOptimistic(reviewId: string) {
+    setOptimisticVotes((prev) => {
+      if (!prev.has(reviewId)) return prev;
+      const next = new Set(prev);
+      next.delete(reviewId);
+      return next;
+    });
+  }
 
   const total = stats?.review_count || 0;
   const average = stats?.average_rating || 0;
@@ -243,20 +312,52 @@ export function ReviewsTab({ slug }: ReviewsTabProps) {
         </p>
       ) : (
         <div className="flex flex-col gap-4">
-          {reviews.map((review) => (
-            <ReviewCard
-              key={review.id}
-              review={review}
-              slug={slug}
-              onEdit={() => {
-                setEditing(review);
-                setShowForm(true);
-              }}
-              onDelete={() => setDeleting(review)}
-              onHelpful={() => helpfulMutation.mutate(review.id)}
-              helpfulPending={helpfulMutation.isPending}
-            />
-          ))}
+          {reviews.map((review) => {
+            // Persistent vote state:
+            //   - authenticated → server-truth `has_voted_helpful`
+            //   - anonymous → localStorage Set (per-device memory)
+            const persistedVote = isAuthenticated
+              ? review.has_voted_helpful
+              : anonHelpfulVotes.has(review.id);
+            // Optimistic flip while the request is in flight, so the
+            // button turns gold and the count bumps the moment you click.
+            const isOptimistic = optimisticVotes.has(review.id);
+            const showVoted = persistedVote || isOptimistic;
+            const displayCount =
+              review.helpful_count + (isOptimistic && !persistedVote ? 1 : 0);
+
+            return (
+              <ReviewCard
+                key={review.id}
+                review={review}
+                showVoted={showVoted}
+                displayCount={displayCount}
+                onEdit={() => {
+                  setEditing(review);
+                  setShowForm(true);
+                }}
+                onDelete={() => setDeleting(review)}
+                onHelpful={() => {
+                  // Authenticated users can toggle (un-vote). For them an
+                  // optimistic flip is more complex, so we keep it simple:
+                  // mark optimistic only when adding a new vote, not when
+                  // un-voting an existing one.
+                  if (!persistedVote) markOptimistic(review.id);
+
+                  helpfulMutation.mutate(review.id, {
+                    onSuccess: () => {
+                      if (!isAuthenticated) recordAnonVote(review.id);
+                    },
+                    onError: () => {
+                      clearOptimistic(review.id);
+                      toast.danger("Couldn't register your vote. Please try again.");
+                    },
+                  });
+                }}
+                helpfulPending={helpfulMutation.isPending}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -289,15 +390,16 @@ export function ReviewsTab({ slug }: ReviewsTabProps) {
 // ---------------------------------------------------------------------------
 interface ReviewCardProps {
   review: Review;
-  slug: string;
+  showVoted: boolean;
+  displayCount: number;
   onEdit: () => void;
   onDelete: () => void;
   onHelpful: () => void;
   helpfulPending: boolean;
 }
 
-function ReviewCard({ review, slug, onEdit, onDelete, onHelpful, helpfulPending }: ReviewCardProps) {
-  void slug;
+function ReviewCard({ review, showVoted, displayCount, onEdit, onDelete, onHelpful, helpfulPending }: ReviewCardProps) {
+  void helpfulPending;
   return (
     <article
       className="rounded-lg"
@@ -385,19 +487,26 @@ function ReviewCard({ review, slug, onEdit, onDelete, onHelpful, helpfulPending 
         <button
           type="button"
           onClick={onHelpful}
-          disabled={helpfulPending || review.is_own}
-          className="flex items-center gap-2 rounded-md px-3 py-1.5 transition-all duration-200 disabled:opacity-50"
+          disabled={review.is_own}
+          className="group flex items-center gap-2 rounded-md px-3 py-1.5 transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
           style={{
-            background: review.has_voted_helpful ? "rgba(187,148,41,0.12)" : "transparent",
-            border: `1px solid ${review.has_voted_helpful ? "var(--gold)" : "var(--bg-border)"}`,
-            color: review.has_voted_helpful ? "var(--gold-dark)" : "var(--white-faint)",
+            background: showVoted ? "rgba(187,148,41,0.16)" : "transparent",
+            border: `1px solid ${showVoted ? "var(--gold)" : "var(--bg-border)"}`,
+            color: showVoted ? "var(--gold-dark)" : "var(--white-faint)",
             fontFamily: "var(--font-montserrat)",
             fontSize: "var(--text-xs)",
           }}
           title={review.is_own ? "You can't vote on your own review" : ""}
         >
-          <ThumbsUp size={12} />
-          Helpful{review.helpful_count > 0 && ` (${review.helpful_count})`}
+          <ThumbsUp
+            size={12}
+            fill={showVoted ? "var(--gold)" : "none"}
+            className="transition-transform duration-200 group-hover:-translate-y-px"
+            style={{
+              transform: showVoted ? "scale(1.1)" : "scale(1)",
+            }}
+          />
+          Helpful{displayCount > 0 && ` (${displayCount})`}
         </button>
 
         {review.is_own && (

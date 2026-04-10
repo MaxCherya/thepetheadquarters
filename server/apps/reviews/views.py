@@ -226,9 +226,21 @@ class ReviewDetailView(APIView):
 
 
 class ReviewHelpfulView(APIView):
-    """Toggle the current user's helpful vote on a review."""
+    """
+    Toggle a 'helpful' vote on a review.
 
-    permission_classes = [IsAuthenticated]
+    Authenticated users get the strict treatment: a `ReviewHelpfulVote` row
+    is created/deleted, the count is recomputed, and they can un-vote. Their
+    votes follow them across devices.
+
+    Anonymous users get a lighter treatment so they can engage without
+    needing an account. The counter is bumped on the first request from a
+    given IP within a 24-hour window; further requests from the same IP
+    no-op so a single visitor can't farm the count. The frontend tracks
+    its own `voted` state in localStorage for visual feedback.
+    """
+
+    permission_classes = [AllowAny]
 
     def post(self, request, slug, review_id):
         try:
@@ -236,23 +248,52 @@ class ReviewHelpfulView(APIView):
         except Review.DoesNotExist:
             return error_response("reviews.not_found", status_code=404)
 
-        # A user can't vote on their own review
-        if review.user_id == request.user.id:
-            return error_response("reviews.cannot_vote_own", status_code=403)
+        # ----- Authenticated path: per-user vote row, supports un-voting -----
+        if request.user and request.user.is_authenticated:
+            if review.user_id == request.user.id:
+                return error_response("reviews.cannot_vote_own", status_code=403)
 
-        existing = ReviewHelpfulVote.objects.filter(review=review, user=request.user).first()
-        if existing:
-            existing.delete()
-            voted = False
-        else:
-            ReviewHelpfulVote.objects.create(review=review, user=request.user)
-            voted = True
+            existing = ReviewHelpfulVote.objects.filter(review=review, user=request.user).first()
+            if existing:
+                existing.delete()
+                voted = False
+            else:
+                ReviewHelpfulVote.objects.create(review=review, user=request.user)
+                voted = True
 
-        review.refresh_from_db(fields=["helpful_count"])
+            review.refresh_from_db(fields=["helpful_count"])
+            return success_response(data={
+                "helpful_count": review.helpful_count,
+                "has_voted_helpful": voted,
+            })
+
+        # ----- Anonymous path: bump counter once per IP per 24h -----
+        from django.core.cache import cache
+        from django.db.models import F
+
+        ip = _client_ip(request)
+        cache_key = f"helpful:{ip}:{review_id}"
+        already_voted = cache.get(cache_key) is not None
+
+        if not already_voted:
+            Review.objects.filter(id=review.id).update(
+                helpful_count=F("helpful_count") + 1,
+            )
+            cache.set(cache_key, True, timeout=60 * 60 * 24)  # 24 hours
+            review.refresh_from_db(fields=["helpful_count"])
+
         return success_response(data={
             "helpful_count": review.helpful_count,
-            "has_voted_helpful": voted,
+            "has_voted_helpful": True,
         })
+
+
+def _client_ip(request) -> str:
+    """Best-effort client IP for cache-key dedupe (not for security)."""
+    forwarded = request.META.get("HTTP_X_FORWARDED_FOR", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR", "0.0.0.0")
 
 
 class MyReviewsView(APIView):
