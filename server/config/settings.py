@@ -41,6 +41,7 @@ LOCAL_APPS = [
     "apps.attributes",
     "apps.newsletter",
     "apps.contact",
+    "apps.orders",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -159,6 +160,19 @@ DEFAULT_FROM_EMAIL = config(
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
 
 # ---------------------------------------------------------------------------
+# Stripe
+# ---------------------------------------------------------------------------
+STRIPE_SECRET_KEY = config("STRIPE_SECRET_KEY", default="")
+STRIPE_PUBLISHABLE_KEY = config("STRIPE_PUBLISHABLE_KEY", default="")
+STRIPE_WEBHOOK_SECRET = config("STRIPE_WEBHOOK_SECRET", default="")
+
+# ---------------------------------------------------------------------------
+# Shipping
+# ---------------------------------------------------------------------------
+SHIPPING_FLAT_RATE_PENCE = config("SHIPPING_FLAT_RATE_PENCE", default=399, cast=int)
+SHIPPING_FREE_THRESHOLD_PENCE = config("SHIPPING_FREE_THRESHOLD_PENCE", default=3000, cast=int)
+
+# ---------------------------------------------------------------------------
 # i18n
 # ---------------------------------------------------------------------------
 LANGUAGE_CODE = "en-gb"
@@ -227,6 +241,26 @@ CSRF_TRUSTED_ORIGINS = config(
 )
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = False
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "apps": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
 
 # ---------------------------------------------------------------------------
 # Production overrides

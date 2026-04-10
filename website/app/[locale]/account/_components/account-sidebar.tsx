@@ -35,13 +35,15 @@ export function AccountSidebar({ dict }: AccountSidebarProps) {
       )}
 
       {navItems.map((item) => {
-        const isActive = pathname.endsWith(item.href) || (item.href === "/account" && pathname.endsWith("/account"));
-        const isDisabled = item.key === "orders";
+        const isActive =
+          item.href === "/account"
+            ? pathname.endsWith("/account")
+            : pathname.includes(item.href);
 
         return (
           <Link
             key={item.key}
-            href={isDisabled ? "#" : item.href}
+            href={item.href}
             className="flex items-center gap-3 rounded-md px-4 py-2.5 transition-all duration-200"
             style={{
               background: isActive ? "rgba(187,148,41,0.1)" : "transparent",
@@ -49,15 +51,10 @@ export function AccountSidebar({ dict }: AccountSidebarProps) {
               fontFamily: "var(--font-montserrat)",
               fontSize: "var(--text-sm)",
               fontWeight: isActive ? "var(--weight-medium)" : "var(--weight-regular)",
-              opacity: isDisabled ? 0.4 : 1,
-              pointerEvents: isDisabled ? "none" : "auto",
             }}
           >
             <item.icon size={16} />
             {dict.account[item.key]}
-            {isDisabled && (
-              <span style={{ fontSize: "var(--text-xs)", color: "var(--white-faint)", marginLeft: "auto" }}>Soon</span>
-            )}
           </Link>
         );
       })}

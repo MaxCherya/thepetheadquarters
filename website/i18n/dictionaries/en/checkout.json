@@ -1,0 +1,56 @@
+{
+  "title": "Checkout",
+  "shipping": {
+    "title": "Shipping Information",
+    "email": "Email Address",
+    "emailPlaceholder": "your@email.com",
+    "savedAddresses": "Ship to a saved address",
+    "newAddress": "Use a different address",
+    "fullName": "Full Name",
+    "addressLine1": "Address Line 1",
+    "addressLine2": "Address Line 2",
+    "city": "City",
+    "county": "County",
+    "postcode": "Postcode",
+    "phone": "Phone (optional)",
+    "continue": "Continue to Review"
+  },
+  "review": {
+    "title": "Review Your Order",
+    "editShipping": "Edit",
+    "shippingTo": "Shipping to",
+    "items": "Items",
+    "subtotal": "Subtotal",
+    "shipping": "Standard Delivery",
+    "shippingFree": "FREE",
+    "freeShippingNote": "Free delivery on orders over £30",
+    "total": "Total",
+    "placeOrder": "Place Order",
+    "processing": "Processing..."
+  },
+  "emailRequired": "Please verify your email before checkout.",
+  "resendVerification": "Resend Verification Email",
+  "guestNote": "Checking out as guest. No account required.",
+  "success": {
+    "title": "Thank You!",
+    "subtitle": "Your order has been confirmed",
+    "orderNumber": "Order Number",
+    "confirmationSent": "A confirmation email has been sent to",
+    "continueShopping": "Continue Shopping",
+    "viewOrders": "View Your Orders"
+  },
+  "errors": {
+    "cart_empty": "Your cart is empty.",
+    "variant_not_found": "One or more items are no longer available.",
+    "product_unavailable": "One or more products are no longer available.",
+    "insufficient_stock": "Insufficient stock for one or more items.",
+    "email_required": "Email address is required.",
+    "full_name_required": "Full name is required.",
+    "address_required": "Address is required.",
+    "city_required": "City is required.",
+    "postcode_required": "Postcode is required.",
+    "payment_error": "There was an issue processing your payment. Please try again.",
+    "email_not_verified": "Please verify your email address before checking out.",
+    "stripe_not_configured": "Payment system is not available right now."
+  }
+}

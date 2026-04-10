@@ -53,8 +53,8 @@ export function CartSummary({ dict }: CartSummaryProps) {
           <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--white-dim)" }}>
             {dict.delivery}
           </span>
-          <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-xs)", color: "var(--white-faint)" }}>
-            {dict.deliveryNote}
+          <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: subtotal >= 3000 ? "var(--success)" : "var(--white)", fontWeight: 600 }}>
+            {subtotal >= 3000 ? "FREE" : "£3.99"}
           </span>
         </div>
 
@@ -64,15 +64,15 @@ export function CartSummary({ dict }: CartSummaryProps) {
           <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-base)", fontWeight: 600, color: "var(--white)" }}>
             {dict.total}
           </span>
-          <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--gold)" }}>
-            {formatPrice(subtotal)}
+          <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--gold-dark)" }}>
+            {formatPrice(subtotal >= 3000 ? subtotal : subtotal + 399)}
           </span>
         </div>
       </div>
 
-      <button
-        disabled
-        className="btn-gold mt-6 w-full rounded-md py-3 transition-all duration-300 disabled:opacity-50"
+      <Link
+        href="/checkout"
+        className="btn-gold mt-6 block w-full rounded-md py-3 text-center transition-all duration-300 hover:-translate-y-0.5"
         style={{
           fontFamily: "var(--font-montserrat)",
           fontWeight: "var(--weight-semibold)",
@@ -82,7 +82,7 @@ export function CartSummary({ dict }: CartSummaryProps) {
         }}
       >
         {dict.checkout}
-      </button>
+      </Link>
 
       <Link
         href="/products"

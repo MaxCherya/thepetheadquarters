@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Skeleton } from "@heroui/react";
 import { useProducts } from "@/hooks/use-products";
 import { ProductCard } from "../../_components/product-card";
@@ -77,17 +78,55 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function ProductsView({ dict, categories, brands, lang, initialSearch = "" }: ProductsViewProps) {
-  const [filters, setFilters] = useState<Filters>(emptyFilters);
-  const [search, setSearch] = useState(initialSearch);
-  const [sort, setSort] = useState("-created_at");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Initialize state from URL search params
+  const [filters, setFilters] = useState<Filters>(() => ({
+    category: searchParams.get("category") || "",
+    brand: searchParams.get("brand") || "",
+    min_price: "",
+    max_price: searchParams.get("max_price") || "",
+    in_stock: searchParams.get("in_stock") || "",
+    on_sale: "",
+    featured: searchParams.get("featured") || "",
+  }));
+  const [search, setSearch] = useState(searchParams.get("search") || initialSearch);
+  const [sort, setSort] = useState(searchParams.get("sort") || "-created_at");
+  const [page, setPage] = useState(() => Number(searchParams.get("page")) || 1);
+  const [pageSize, setPageSize] = useState(() => Number(searchParams.get("page_size")) || 12);
+  const [viewMode, setViewMode] = useState<ViewMode>(() => (searchParams.get("view") as ViewMode) || "grid");
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
 
   const debouncedSearch = useDebounce(search, 400);
   const debouncedMaxPrice = useDebounce(filters.max_price, 600);
+
+  // Sync state to URL (replace, not push, to avoid history bloat)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    const params = new URLSearchParams();
+    if (page > 1) params.set("page", String(page));
+    if (pageSize !== 12) params.set("page_size", String(pageSize));
+    if (sort !== "-created_at") params.set("sort", sort);
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (filters.category) params.set("category", filters.category);
+    if (filters.brand) params.set("brand", filters.brand);
+    if (debouncedMaxPrice) params.set("max_price", debouncedMaxPrice);
+    if (filters.in_stock) params.set("in_stock", filters.in_stock);
+    if (filters.featured) params.set("featured", filters.featured);
+    if (viewMode !== "grid") params.set("view", viewMode);
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(newUrl, { scroll: false });
+  }, [page, pageSize, sort, debouncedSearch, filters.category, filters.brand, debouncedMaxPrice, filters.in_stock, filters.featured, viewMode, pathname, router]);
 
   const params: Record<string, string> = {
     ordering: sort,

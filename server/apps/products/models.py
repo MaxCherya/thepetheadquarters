@@ -4,7 +4,17 @@ from apps.core.models import BaseModel, TranslationBaseModel, SlugMixin, Sortabl
 
 
 class Product(BaseModel, SlugMixin, ActivatableMixin):
+    class FulfillmentType(models.TextChoices):
+        SELF = "self", "Self-fulfilled"
+        DROPSHIP = "dropship", "Dropship"
+
     brand_id = models.UUIDField(db_index=True, null=True, blank=True)
+    fulfillment_type = models.CharField(
+        max_length=10,
+        choices=FulfillmentType.choices,
+        default=FulfillmentType.SELF,
+        db_index=True,
+    )
     is_featured = models.BooleanField(default=False, db_index=True)
     average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     review_count = models.PositiveIntegerField(default=0)

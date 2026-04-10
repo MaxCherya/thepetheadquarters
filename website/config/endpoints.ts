@@ -42,4 +42,10 @@ export const endpoints = {
     list: `${API_BASE}/addresses/`,
     detail: (id: string) => `${API_BASE}/addresses/${id}/`,
   },
+  orders: {
+    checkout: `${API_BASE}/orders/checkout/`,
+    list: `${API_BASE}/orders/`,
+    detail: (orderNumber: string) => `${API_BASE}/orders/${orderNumber}/`,
+    bySession: (sessionId: string) => `${API_BASE}/orders/by-session/${sessionId}/`,
+  },
 } as const;

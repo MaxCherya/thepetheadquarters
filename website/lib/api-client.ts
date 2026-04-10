@@ -50,12 +50,24 @@ class ApiClient {
     const fullUrl = params ? `${url}?${searchParams.toString()}` : url;
     const isClient = typeof window !== "undefined";
 
-    const response = await fetch(fullUrl, {
-      method: "GET",
-      headers: this.baseHeaders(),
-      ...(isClient ? { credentials: "include" as const } : {}),
-      ...(isClient ? {} : { next: { revalidate: 60 } }),
-    });
+    const doFetch = () =>
+      fetch(fullUrl, {
+        method: "GET",
+        headers: this.baseHeaders(),
+        ...(isClient ? { credentials: "include" as const } : {}),
+        ...(isClient ? {} : { next: { revalidate: 60 } }),
+      });
+
+    let response = await doFetch();
+
+    // If client-side and the request was rejected for auth reasons,
+    // try to refresh the session and retry once.
+    if (isClient && (response.status === 401 || response.status === 403)) {
+      const refreshed = await attemptRefresh();
+      if (refreshed) {
+        response = await doFetch();
+      }
+    }
 
     if (!response.ok) {
       throw new ApiError(response.status, `API request failed: ${response.statusText}`);

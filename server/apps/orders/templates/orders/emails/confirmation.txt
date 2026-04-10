@@ -1,0 +1,22 @@
+Order Confirmed — {{ order.order_number }}
+
+Hello,
+
+Thank you for your order! Here are the details:
+
+Order Number: {{ order.order_number }}
+{% for item in items %}
+- {{ item.product_name }}{% if item.variant_option_label %} ({{ item.variant_option_label }}){% endif %} x{{ item.quantity }} — £{{ item.line_total|divisibleby:100 }}{% endfor %}
+
+Subtotal: £{{ order.subtotal|divisibleby:100 }}
+Shipping: {% if order.shipping_cost == 0 %}FREE{% else %}£{{ order.shipping_cost|divisibleby:100 }}{% endif %}
+Total: £{{ order.total|divisibleby:100 }}
+
+Shipping to:
+{{ order.shipping_full_name }}
+{{ order.shipping_address_line_1 }}{% if order.shipping_address_line_2 %}, {{ order.shipping_address_line_2 }}{% endif %}
+{{ order.shipping_city }}{% if order.shipping_county %}, {{ order.shipping_county }}{% endif %} {{ order.shipping_postcode }}
+
+View your order: {{ confirmation_url }}
+
+{{ site_name }}

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#F4F1EA;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:40px auto;background:#FFFFFF;border-radius:4px;border:1px solid #DED9CF;">
+    <tr>
+      <td style="padding:40px 32px;text-align:center;">
+        <h1 style="margin:0 0 8px;font-size:24px;font-weight:400;color:#111111;">{{ site_name }}</h1>
+        <p style="margin:0;font-size:14px;color:#555555;">Order Confirmed</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:0 32px 32px;">
+        <p style="font-size:15px;line-height:1.6;color:#2D2D2D;">Thank you for your order!</p>
+        <p style="font-size:13px;color:#555555;margin-bottom:24px;">Order number: <strong style="color:#111111;">{{ order.order_number }}</strong></p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #DED9CF;">
+          {% for item in items %}
+          <tr>
+            <td style="padding:12px 0;border-bottom:1px solid #DED9CF;">
+              <p style="margin:0;font-size:14px;color:#111111;font-weight:500;">{{ item.product_name }}</p>
+              {% if item.variant_option_label %}<p style="margin:2px 0 0;font-size:12px;color:#555555;">{{ item.variant_option_label }}</p>{% endif %}
+            </td>
+            <td style="padding:12px 0;border-bottom:1px solid #DED9CF;text-align:right;white-space:nowrap;">
+              <p style="margin:0;font-size:13px;color:#555555;">x{{ item.quantity }}</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
+          <tr>
+            <td style="padding:4px 0;font-size:13px;color:#555555;">Shipping</td>
+            <td style="padding:4px 0;font-size:13px;color:#111111;text-align:right;">{% if order.shipping_cost == 0 %}FREE{% else %}&pound;{{ order.shipping_cost }}{% endif %}</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;font-size:15px;font-weight:600;color:#111111;border-top:1px solid #DED9CF;">Total</td>
+            <td style="padding:8px 0;font-size:15px;font-weight:600;color:#111111;text-align:right;border-top:1px solid #DED9CF;">&pound;{{ order.total }}</td>
+          </tr>
+        </table>
+
+        <div style="margin-top:24px;padding:16px;background:#F4F1EA;border-radius:4px;">
+          <p style="margin:0 0 4px;font-size:12px;color:#555555;text-transform:uppercase;letter-spacing:0.05em;">Shipping to</p>
+          <p style="margin:0;font-size:14px;color:#111111;line-height:1.5;">
+            {{ order.shipping_full_name }}<br>
+            {{ order.shipping_address_line_1 }}{% if order.shipping_address_line_2 %}, {{ order.shipping_address_line_2 }}{% endif %}<br>
+            {{ order.shipping_city }}{% if order.shipping_county %}, {{ order.shipping_county }}{% endif %} {{ order.shipping_postcode }}
+          </p>
+        </div>
+
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding:24px 0;text-align:center;">
+              <a href="{{ confirmation_url }}" style="display:inline-block;padding:14px 32px;background:#C6A030;color:#FFFFFF;text-decoration:none;font-size:14px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border-radius:4px;">View Order</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:24px 32px;border-top:1px solid #DED9CF;text-align:center;">
+        <p style="margin:0;font-size:12px;color:#999999;">&copy; {{ site_name }}</p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
