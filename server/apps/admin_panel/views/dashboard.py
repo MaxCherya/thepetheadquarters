@@ -4,6 +4,7 @@ from django.db.models import Sum, Count, Q
 from django.utils import timezone
 
 from apps.core.responses import success_response
+from apps.analytics.models import Visitor
 from apps.contact.models import ContactMessage
 from apps.orders.models import Order, OrderItem
 from apps.products.models import ProductVariant
@@ -50,6 +51,7 @@ class DashboardView(AdminBaseView):
         reviews_pending_reply_count = Review.objects.filter(
             is_visible=True, admin_reply=""
         ).count()
+        visitors_today_count = Visitor.objects.filter(last_seen_at__gte=today_start).count()
 
         # Recent orders (last 5)
         from apps.admin_panel.serializers.orders import AdminOrderListSerializer
@@ -72,6 +74,7 @@ class DashboardView(AdminBaseView):
                 "dropship_pending_count": dropship_pending,
                 "unread_messages_count": unread_messages_count,
                 "reviews_pending_reply_count": reviews_pending_reply_count,
+                "visitors_today_count": visitors_today_count,
                 "recent_orders": recent_serialized,
             }
         )

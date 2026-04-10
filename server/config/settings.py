@@ -46,6 +46,7 @@ LOCAL_APPS = [
     "apps.procurement",
     "apps.promotions",
     "apps.reviews",
+    "apps.analytics",
     "apps.audit",
     "apps.admin_panel",
 ]
@@ -186,6 +187,22 @@ VAT_RATE = config("VAT_RATE", default=0.20, cast=float)
 PRICES_INCLUDE_VAT = config("PRICES_INCLUDE_VAT", default=True, cast=bool)
 VAT_REGISTERED = config("VAT_REGISTERED", default=True, cast=bool)
 COMPANY_VAT_NUMBER = config("COMPANY_VAT_NUMBER", default="")
+
+# ---------------------------------------------------------------------------
+# Analytics — first-party, cookieless, GDPR-friendly
+# ---------------------------------------------------------------------------
+# Server-side salt mixed into the daily visitor hash. MUST be set in
+# production via env var so the hash can't be predicted off-site.
+ANALYTICS_DAILY_SALT = config(
+    "ANALYTICS_DAILY_SALT",
+    default="tph-analytics-default-salt-rotate-me-in-prod",
+)
+ANALYTICS_SESSION_TIMEOUT_MINUTES = config(
+    "ANALYTICS_SESSION_TIMEOUT_MINUTES", default=30, cast=int,
+)
+ANALYTICS_RAW_RETENTION_DAYS = config(
+    "ANALYTICS_RAW_RETENTION_DAYS", default=90, cast=int,
+)
 
 # ---------------------------------------------------------------------------
 # i18n

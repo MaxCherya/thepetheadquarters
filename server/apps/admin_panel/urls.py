@@ -63,6 +63,11 @@ from apps.admin_panel.views.reviews import (
     AdminReviewDetailView,
     AdminReviewListView,
 )
+from apps.admin_panel.views.analytics import (
+    AdminAnalyticsOverviewView,
+    AdminAnalyticsVisitorDetailView,
+    AdminAnalyticsVisitorListView,
+)
 from apps.admin_panel.views.upload import AdminImageUploadView, AdminUploadInfoView
 from apps.admin_panel.views.reports import (
     AdminInventoryValuationView,
@@ -142,6 +147,11 @@ urlpatterns = [
     # Reviews
     path("reviews/", AdminReviewListView.as_view()),
     path("reviews/<uuid:review_id>/", AdminReviewDetailView.as_view()),
+
+    # Analytics
+    path("analytics/overview/", AdminAnalyticsOverviewView.as_view()),
+    path("analytics/visitors/", AdminAnalyticsVisitorListView.as_view()),
+    path("analytics/visitors/<uuid:visitor_id>/", AdminAnalyticsVisitorDetailView.as_view()),
 
     # Uploads
     path("upload/info/", AdminUploadInfoView.as_view()),

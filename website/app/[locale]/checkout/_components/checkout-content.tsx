@@ -10,6 +10,7 @@ import { endpoints } from "@/config/endpoints";
 import type { Address } from "@/types/auth";
 import type enCheckout from "@/i18n/dictionaries/en/checkout.json";
 import type { PromoState } from "@/components/cart/promo-code-box";
+import { track } from "@/lib/analytics";
 import { ShippingForm } from "./shipping-form";
 import { AddressSelector } from "./address-selector";
 import { OrderReview } from "./order-review";
@@ -53,6 +54,17 @@ export function CheckoutContent({ dict }: CheckoutContentProps) {
       router.replace("/cart");
     }
   }, [items.length, router]);
+
+  // Fire checkout_start once when the checkout page mounts with a non-empty cart
+  useEffect(() => {
+    if (items.length > 0) {
+      track("checkout_start", {
+        item_count: items.length,
+        value_pence: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Fetch saved addresses for authenticated users
   useEffect(() => {

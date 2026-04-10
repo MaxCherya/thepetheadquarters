@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import type { CartItem } from "@/types/cart";
+import { track } from "@/lib/analytics";
 
 interface CartContextType {
   items: CartItem[];
@@ -112,10 +113,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       return [...prev, { ...newItem, quantity: newItem.quantity || 1 }];
     });
     setDrawerOpen(true);
+    track("add_to_cart", {
+      product_id: newItem.productId,
+      variant_id: newItem.variantId,
+      quantity: newItem.quantity || 1,
+      value_pence: newItem.price * (newItem.quantity || 1),
+    });
   }, []);
 
   const removeItem = useCallback((variantId: string) => {
     setItems((prev) => prev.filter((i) => i.variantId !== variantId));
+    track("remove_from_cart", { variant_id: variantId });
   }, []);
 
   const updateQuantity = useCallback((variantId: string, quantity: number) => {

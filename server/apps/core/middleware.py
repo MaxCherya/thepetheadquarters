@@ -13,13 +13,14 @@ class CacheControlMiddleware:
         if not request.path.startswith("/api/"):
             return response
 
-        # Admin + auth + orders endpoints must never be cached
-        # (sensitive data, must be fresh after mutations)
+        # Admin + auth + orders + analytics endpoints must never be cached
+        # (sensitive data or write-only tracking endpoints).
         if (
             request.path.startswith("/api/v1/admin/")
             or request.path.startswith("/api/v1/auth/")
             or request.path.startswith("/api/v1/orders/")
             or request.path.startswith("/api/v1/addresses/")
+            or request.path.startswith("/api/v1/analytics/")
         ):
             response["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
             response["Pragma"] = "no-cache"

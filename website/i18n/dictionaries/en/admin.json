@@ -12,6 +12,7 @@
     "promotions": "Promotions",
     "reviews": "Reviews",
     "contactMessages": "Messages",
+    "analytics": "Analytics",
     "reports": "Reports",
     "audit": "Audit Log",
     "backToStore": "Back to Store"
@@ -85,6 +86,7 @@
   "categories": { "title": "Categories" },
   "promotions": { "title": "Promotions" },
   "reviews": { "title": "Reviews" },
+  "analytics": { "title": "Analytics" },
   "reports": { "title": "Reports" },
   "audit": { "title": "Audit Log" },
   "contactMessages": { "title": "Contact Messages" },

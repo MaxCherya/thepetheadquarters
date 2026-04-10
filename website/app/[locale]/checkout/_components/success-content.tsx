@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { useAuth } from "@/lib/auth-context";
+import { track } from "@/lib/analytics";
 import type { Order } from "@/types/order";
 import { endpoints } from "@/config/endpoints";
 import type enCheckout from "@/i18n/dictionaries/en/checkout.json";
@@ -52,6 +53,11 @@ export function SuccessContent({ dict, sessionId }: SuccessContentProps) {
           if (data.status === "success" && data.data) {
             setOrder(data.data);
             setLoading(false);
+            // Fire conversion event exactly once when the order resolves
+            track("checkout_complete", {
+              order_number: data.data.order_number,
+              value_pence: data.data.total,
+            });
             return;
           }
         }

@@ -140,6 +140,11 @@ export const endpoints = {
       list: `${API_BASE}/admin/reviews/`,
       detail: (id: string) => `${API_BASE}/admin/reviews/${id}/`,
     },
+    analytics: {
+      overview: `${API_BASE}/admin/analytics/overview/`,
+      visitors: `${API_BASE}/admin/analytics/visitors/`,
+      visitor: (id: string) => `${API_BASE}/admin/analytics/visitors/${id}/`,
+    },
     promotions: {
       list: `${API_BASE}/admin/promotions/`,
       detail: (id: string) => `${API_BASE}/admin/promotions/${id}/`,

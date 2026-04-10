@@ -18,6 +18,7 @@ import {
   Mail,
   Sparkles,
   Star,
+  Activity,
   ArrowLeft,
   Menu,
   X,
@@ -42,6 +43,7 @@ const navItems = [
   { key: "promotions" as const, href: "/admin/promotions", icon: Sparkles },
   { key: "reviews" as const, href: "/admin/reviews", icon: Star },
   { key: "contactMessages" as const, href: "/admin/contact-messages", icon: Mail },
+  { key: "analytics" as const, href: "/admin/analytics", icon: Activity },
   { key: "reports" as const, href: "/admin/reports", icon: BarChart3 },
   { key: "audit" as const, href: "/admin/audit", icon: Shield },
 ];

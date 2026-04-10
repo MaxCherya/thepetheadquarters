@@ -100,7 +100,102 @@ export interface AdminDashboard {
   dropship_pending_count: number;
   unread_messages_count: number;
   reviews_pending_reply_count: number;
+  visitors_today_count: number;
   recent_orders: AdminOrderListItem[];
+}
+
+export interface AnalyticsOverview {
+  date_from: string;
+  date_to: string;
+  totals: {
+    visitors: number;
+    sessions: number;
+    pageviews: number;
+    bounce_rate: number;
+    avg_pages_per_session: number;
+  };
+  time_series: Array<{ date: string; visitors: number; pageviews: number }>;
+  top_pages: Array<{ path: string; views: number; unique_visitors: number }>;
+  top_referrers: Array<{ referrer_host: string; sessions: number }>;
+  top_countries: Array<{ country: string; visitors: number }>;
+  devices: Array<{ device_type: string; visitors: number }>;
+  browsers: Array<{ browser: string; visitors: number }>;
+  funnel: {
+    visitors: number;
+    product_views: number;
+    add_to_cart: number;
+    checkout_start: number;
+    checkout_complete: number;
+  };
+  utm_sources: Array<{ utm_source: string; sessions: number }>;
+}
+
+export interface AnalyticsVisitorListItem {
+  id: string;
+  country: string;
+  device_type: string;
+  browser: string;
+  os: string;
+  user_email: string;
+  first_seen_at: string;
+  last_seen_at: string;
+  pageview_count: number;
+  session_count: number;
+}
+
+export interface AnalyticsVisitorPageView {
+  id: string;
+  path: string;
+  title: string;
+  viewed_at: string;
+}
+
+export interface AnalyticsVisitorEvent {
+  id: string;
+  name: string;
+  properties: Record<string, unknown>;
+  occurred_at: string;
+}
+
+export interface AnalyticsVisitorSession {
+  id: string;
+  started_at: string;
+  last_activity_at: string;
+  entry_path: string;
+  exit_path: string;
+  referrer: string;
+  referrer_host: string;
+  utm_source: string;
+  utm_medium: string;
+  utm_campaign: string;
+  pageview_count: number;
+  event_count: number;
+  pageviews: AnalyticsVisitorPageView[];
+  events: AnalyticsVisitorEvent[];
+}
+
+export interface AnalyticsVisitorDetail {
+  id: string;
+  country: string;
+  device_type: string;
+  browser: string;
+  os: string;
+  user: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+  } | null;
+  first_seen_at: string;
+  last_seen_at: string;
+  pageview_count: number;
+  session_count: number;
+  sessions: AnalyticsVisitorSession[];
+  order_summary: {
+    order_count: number;
+    total_spent_pence: number;
+    last_order_at: string | null;
+  } | null;
 }
 
 export interface AdminReview {

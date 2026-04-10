@@ -11,6 +11,7 @@ import {
 import type { User, RegisterRequest } from "@/types/auth";
 import { endpoints } from "@/config/endpoints";
 import { apiClient, ApiError } from "@/lib/api-client";
+import { track } from "@/lib/analytics";
 
 interface AuthContextType {
   user: User | null;
@@ -70,6 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new ApiError(401, res.code || "auth.invalid_credentials");
       }
       setUser(res.data);
+      track("login");
     },
     [],
   );
@@ -84,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw new ApiError(400, res.code || "auth.registration_failed");
       }
       setUser(res.data);
+      track("signup");
     },
     [],
   );

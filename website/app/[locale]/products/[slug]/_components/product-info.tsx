@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@heroui/react";
 import { ShoppingCart, Minus, Plus } from "lucide-react";
 import { StarRating } from "@/components/ui/star-rating";
 import { useCart } from "@/lib/cart-context";
+import { track } from "@/lib/analytics";
 import { VariantSelector } from "./variant-selector";
 import type { ProductDetail } from "@/types/product";
 
@@ -33,6 +34,19 @@ export function ProductInfo({ product, dict }: ProductInfoProps) {
   );
   const [quantity, setQuantity] = useState(1);
   const { addItem } = useCart();
+
+  // Fire a product_view event once per product per mount.
+  useEffect(() => {
+    track("product_view", {
+      product_id: product.id,
+      product_slug: product.slug,
+      product_name: product.name,
+    });
+    // We intentionally do NOT depend on the product object identity to
+    // avoid double-firing on re-renders; the slug change re-mounts the
+    // page (Next.js route change) so this fires exactly once per visit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
 
   const selectedVariant = variants.find((v) => v.id === selectedVariantId);
 
