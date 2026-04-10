@@ -24,6 +24,9 @@ class CreateCheckoutSessionSerializer(serializers.Serializer):
     shipping_address = ShippingAddressSerializer()
     email = serializers.EmailField(required=False)
     saved_address_id = serializers.UUIDField(required=False)
+    promotion_code = serializers.CharField(
+        max_length=64, required=False, allow_blank=True, default=""
+    )
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -43,7 +46,7 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             "id", "order_number", "status", "email",
-            "subtotal", "shipping_cost", "total",
+            "subtotal", "shipping_cost", "discount_amount", "promotion_code", "total",
             "created_at", "paid_at",
             "shipping_full_name", "shipping_address_line_1",
             "shipping_address_line_2", "shipping_city",

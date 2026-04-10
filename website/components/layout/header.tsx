@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ShoppingCart, Menu, X, ArrowRight, UserCircle, LogOut } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, ArrowRight, UserCircle, LogOut, Shield } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import { useAuth } from "@/lib/auth-context";
@@ -39,7 +39,7 @@ export function Header({ dict }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { totalItems, drawerOpen } = useCart();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isStaff, logout } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const cartRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
@@ -246,6 +246,17 @@ export function Header({ dict }: HeaderProps) {
                       <UserCircle size={14} />
                       My Account
                     </Link>
+                    {isStaff && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex w-full items-center gap-2 px-4 py-2.5 transition-colors duration-200 hover:bg-[rgba(187,148,41,0.08)]"
+                        style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--gold-dark)", fontWeight: "var(--weight-medium)" }}
+                      >
+                        <Shield size={14} />
+                        Admin
+                      </Link>
+                    )}
                     <button
                       onClick={() => { setUserMenuOpen(false); logout(); }}
                       className="flex w-full items-center gap-2 px-4 py-2.5 transition-colors duration-200 hover:bg-[rgba(198,40,40,0.08)]"

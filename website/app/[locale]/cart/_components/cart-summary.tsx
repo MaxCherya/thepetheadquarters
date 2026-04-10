@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
+import { PromoCodeBox, type PromoState } from "@/components/cart/promo-code-box";
 
 interface CartSummaryProps {
   dict: {
@@ -15,12 +17,24 @@ interface CartSummaryProps {
   };
 }
 
+const SHIPPING_RATE = 399;
+const FREE_THRESHOLD = 3000;
+
 function formatPrice(pence: number): string {
   return `£${(pence / 100).toFixed(2)}`;
 }
 
 export function CartSummary({ dict }: CartSummaryProps) {
   const { subtotal, totalItems } = useCart();
+  const [promo, setPromo] = useState<PromoState | null>(null);
+
+  const baseShipping = subtotal >= FREE_THRESHOLD ? 0 : SHIPPING_RATE;
+  const freeShippingFromPromo = promo?.appliesToShipping ?? false;
+  const shipping = freeShippingFromPromo ? 0 : baseShipping;
+  const itemDiscount = freeShippingFromPromo ? 0 : Math.min(promo?.discountAmount ?? 0, subtotal);
+  const shippingDiscount = freeShippingFromPromo ? baseShipping : 0;
+  const totalDiscount = itemDiscount + shippingDiscount;
+  const total = subtotal + shipping - itemDiscount;
 
   return (
     <div
@@ -53,9 +67,24 @@ export function CartSummary({ dict }: CartSummaryProps) {
           <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--white-dim)" }}>
             {dict.delivery}
           </span>
-          <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: subtotal >= 3000 ? "var(--success)" : "var(--white)", fontWeight: 600 }}>
-            {subtotal >= 3000 ? "FREE" : "£3.99"}
+          <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: shipping === 0 ? "var(--success)" : "var(--white)", fontWeight: 600 }}>
+            {shipping === 0 ? "FREE" : "£3.99"}
           </span>
+        </div>
+
+        {totalDiscount > 0 && (
+          <div className="flex justify-between">
+            <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--gold-dark)" }}>
+              Discount
+            </span>
+            <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--gold-dark)", fontWeight: 600 }}>
+              −{formatPrice(totalDiscount)}
+            </span>
+          </div>
+        )}
+
+        <div className="pt-1">
+          <PromoCodeBox onChange={setPromo} />
         </div>
 
         <div style={{ height: 1, background: "var(--bg-border)", margin: "var(--space-2) 0" }} />
@@ -65,7 +94,7 @@ export function CartSummary({ dict }: CartSummaryProps) {
             {dict.total}
           </span>
           <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--gold-dark)" }}>
-            {formatPrice(subtotal >= 3000 ? subtotal : subtotal + 399)}
+            {formatPrice(total)}
           </span>
         </div>
       </div>

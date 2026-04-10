@@ -5,6 +5,7 @@ AGENTS.md
 .env
 .env.local
 .env.*.local
+server/media/
 
 # Python
 __pycache__/

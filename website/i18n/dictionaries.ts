@@ -12,6 +12,7 @@ import enLegal from "./dictionaries/en/legal.json";
 import enCart from "./dictionaries/en/cart.json";
 import enAuth from "./dictionaries/en/auth.json";
 import enCheckout from "./dictionaries/en/checkout.json";
+import enAdmin from "./dictionaries/en/admin.json";
 
 type DictionaryMap = {
   common: typeof enCommon;
@@ -24,6 +25,7 @@ type DictionaryMap = {
   cart: typeof enCart;
   auth: typeof enAuth;
   checkout: typeof enCheckout;
+  admin: typeof enAdmin;
 };
 
 export type Namespace = keyof DictionaryMap;
@@ -40,6 +42,7 @@ const namespaces: Record<Locale, { [K in Namespace]: () => Promise<DictionaryMap
     cart: () => import("./dictionaries/en/cart.json").then((m) => m.default),
     auth: () => import("./dictionaries/en/auth.json").then((m) => m.default),
     checkout: () => import("./dictionaries/en/checkout.json").then((m) => m.default),
+    admin: () => import("./dictionaries/en/admin.json").then((m) => m.default),
   },
 };
 

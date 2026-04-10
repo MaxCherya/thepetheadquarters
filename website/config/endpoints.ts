@@ -48,4 +48,93 @@ export const endpoints = {
     detail: (orderNumber: string) => `${API_BASE}/orders/${orderNumber}/`,
     bySession: (sessionId: string) => `${API_BASE}/orders/by-session/${sessionId}/`,
   },
+  promotions: {
+    validate: `${API_BASE}/promotions/validate/`,
+  },
+  admin: {
+    dashboard: `${API_BASE}/admin/dashboard/`,
+    orders: {
+      list: `${API_BASE}/admin/orders/`,
+      detail: (n: string) => `${API_BASE}/admin/orders/${n}/`,
+      status: (n: string) => `${API_BASE}/admin/orders/${n}/status/`,
+      ship: (n: string) => `${API_BASE}/admin/orders/${n}/ship/`,
+      cancel: (n: string) => `${API_BASE}/admin/orders/${n}/cancel/`,
+      refund: (n: string) => `${API_BASE}/admin/orders/${n}/refund/`,
+      notes: (n: string) => `${API_BASE}/admin/orders/${n}/notes/`,
+      dropship: `${API_BASE}/admin/orders/dropship/`,
+      forwardItem: (n: string, itemId: string) => `${API_BASE}/admin/orders/${n}/items/${itemId}/forward/`,
+    },
+    products: {
+      list: `${API_BASE}/admin/products/`,
+      detail: (id: string) => `${API_BASE}/admin/products/${id}/`,
+      variants: (id: string) => `${API_BASE}/admin/products/${id}/variants/`,
+      images: (id: string) => `${API_BASE}/admin/products/${id}/images/`,
+    },
+    variants: {
+      detail: (id: string) => `${API_BASE}/admin/variants/${id}/`,
+    },
+    images: {
+      detail: (id: string) => `${API_BASE}/admin/images/${id}/`,
+    },
+    inventory: {
+      list: `${API_BASE}/admin/inventory/`,
+      update: (id: string) => `${API_BASE}/admin/inventory/${id}/`,
+      movements: (id: string) => `${API_BASE}/admin/inventory/${id}/movements/`,
+      batches: (id: string) => `${API_BASE}/admin/inventory/${id}/batches/`,
+    },
+    customers: {
+      list: `${API_BASE}/admin/customers/`,
+      detail: (id: string) => `${API_BASE}/admin/customers/${id}/`,
+    },
+    suppliers: {
+      list: `${API_BASE}/admin/suppliers/`,
+      detail: (id: string) => `${API_BASE}/admin/suppliers/${id}/`,
+      products: (id: string) => `${API_BASE}/admin/suppliers/${id}/products/`,
+      purchases: (id: string) => `${API_BASE}/admin/suppliers/${id}/purchases/`,
+    },
+    purchaseOrders: {
+      list: `${API_BASE}/admin/purchase-orders/`,
+      detail: (id: string) => `${API_BASE}/admin/purchase-orders/${id}/`,
+      send: (id: string) => `${API_BASE}/admin/purchase-orders/${id}/send/`,
+      receive: (id: string) => `${API_BASE}/admin/purchase-orders/${id}/receive/`,
+      cancel: (id: string) => `${API_BASE}/admin/purchase-orders/${id}/cancel/`,
+    },
+    brands: {
+      list: `${API_BASE}/admin/brands/`,
+      detail: (id: string) => `${API_BASE}/admin/brands/${id}/`,
+      reorder: `${API_BASE}/admin/brands/reorder/`,
+    },
+    categories: {
+      list: `${API_BASE}/admin/categories/`,
+      detail: (id: string) => `${API_BASE}/admin/categories/${id}/`,
+      reorder: `${API_BASE}/admin/categories/reorder/`,
+    },
+    reports: {
+      sales: `${API_BASE}/admin/reports/sales/`,
+      salesExport: `${API_BASE}/admin/reports/sales/export/`,
+      inventoryValuation: `${API_BASE}/admin/reports/inventory-valuation/`,
+      topProducts: `${API_BASE}/admin/reports/top-products/`,
+      topSuppliers: `${API_BASE}/admin/reports/top-suppliers/`,
+      vatReturn: `${API_BASE}/admin/reports/vat-return/`,
+      vatReturnExport: `${API_BASE}/admin/reports/vat-return/export/`,
+      promotions: `${API_BASE}/admin/reports/promotions/`,
+    },
+    audit: {
+      list: `${API_BASE}/admin/audit/`,
+      detail: (id: string) => `${API_BASE}/admin/audit/${id}/`,
+    },
+    contactMessages: {
+      list: `${API_BASE}/admin/contact-messages/`,
+      detail: (id: string) => `${API_BASE}/admin/contact-messages/${id}/`,
+    },
+    promotions: {
+      list: `${API_BASE}/admin/promotions/`,
+      detail: (id: string) => `${API_BASE}/admin/promotions/${id}/`,
+      redemptions: (id: string) => `${API_BASE}/admin/promotions/${id}/redemptions/`,
+    },
+    upload: {
+      image: `${API_BASE}/admin/upload/image/`,
+      info: `${API_BASE}/admin/upload/info/`,
+    },
+  },
 } as const;

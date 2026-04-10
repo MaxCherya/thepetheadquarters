@@ -14,11 +14,15 @@ interface CartContextType {
   drawerOpen: boolean;
   openDrawer: () => void;
   closeDrawer: () => void;
+  /** Persisted promo code the customer has typed/applied. Empty string if none. */
+  promotionCode: string;
+  setPromotionCode: (code: string) => void;
 }
 
 const CartContext = createContext<CartContextType | null>(null);
 
 const STORAGE_KEY = "tph-cart";
+const PROMO_KEY = "tph-cart-promo";
 
 function loadCart(): CartItem[] {
   if (typeof window === "undefined") return [];
@@ -38,19 +42,51 @@ function saveCart(items: CartItem[]) {
   }
 }
 
+function loadPromo(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    return localStorage.getItem(PROMO_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function savePromo(code: string) {
+  try {
+    if (code) localStorage.setItem(PROMO_KEY, code);
+    else localStorage.removeItem(PROMO_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [promotionCode, setPromotionCodeState] = useState("");
 
   useEffect(() => {
     setItems(loadCart());
+    setPromotionCodeState(loadPromo());
     setLoaded(true);
   }, []);
 
   useEffect(() => {
     if (loaded) saveCart(items);
   }, [items, loaded]);
+
+  // Auto-apply ?promo=CODE from the URL on first mount.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const queryCode = params.get("promo");
+    if (queryCode) {
+      const upper = queryCode.trim().toUpperCase();
+      setPromotionCodeState(upper);
+      savePromo(upper);
+    }
+  }, []);
 
   const addItem = useCallback((newItem: Omit<CartItem, "quantity"> & { quantity?: number }) => {
     setItems((prev) => {
@@ -81,16 +117,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
-  const clearCart = useCallback(() => setItems([]), []);
+  const clearCart = useCallback(() => {
+    setItems([]);
+    setPromotionCodeState("");
+    savePromo("");
+  }, []);
   const openDrawer = useCallback(() => setDrawerOpen(true), []);
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+
+  const setPromotionCode = useCallback((code: string) => {
+    const next = (code || "").trim().toUpperCase();
+    setPromotionCodeState(next);
+    savePromo(next);
+  }, []);
 
   const totalItems = useMemo(() => items.reduce((sum, i) => sum + i.quantity, 0), [items]);
   const subtotal = useMemo(() => items.reduce((sum, i) => sum + i.price * i.quantity, 0), [items]);
 
   const value = useMemo(
-    () => ({ items, addItem, removeItem, updateQuantity, clearCart, totalItems, subtotal, drawerOpen, openDrawer, closeDrawer }),
-    [items, addItem, removeItem, updateQuantity, clearCart, totalItems, subtotal, drawerOpen, openDrawer, closeDrawer],
+    () => ({
+      items, addItem, removeItem, updateQuantity, clearCart,
+      totalItems, subtotal, drawerOpen, openDrawer, closeDrawer,
+      promotionCode, setPromotionCode,
+    }),
+    [items, addItem, removeItem, updateQuantity, clearCart, totalItems, subtotal, drawerOpen, openDrawer, closeDrawer, promotionCode, setPromotionCode],
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

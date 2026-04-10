@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.throttling import AnonRateThrottle
@@ -6,6 +8,9 @@ from apps.core.responses import created_response, error_response, validation_err
 
 from .models import Subscriber
 from .serializers import SubscribeSerializer
+from .services import issue_welcome_promo, send_welcome_email
+
+logger = logging.getLogger(__name__)
 
 
 class NewsletterThrottle(AnonRateThrottle):
@@ -39,5 +44,14 @@ class SubscribeView(APIView):
         if not created and not subscriber.is_active:
             subscriber.is_active = True
             subscriber.save(update_fields=["is_active", "updated_at"])
+
+        # Issue a unique single-use 10% welcome promo and email it.
+        # Promo issuing is a side effect — failures must not break the
+        # subscription itself, so we swallow exceptions and log them.
+        try:
+            promotion = issue_welcome_promo(subscriber_email=email)
+            send_welcome_email(subscriber_email=email, promotion=promotion)
+        except Exception:  # pragma: no cover - defensive
+            logger.exception("Failed to issue welcome promo for %s", email)
 
         return created_response({"code": "newsletter.subscribed"})

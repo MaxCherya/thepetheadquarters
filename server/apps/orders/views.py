@@ -93,7 +93,11 @@ class CreateCheckoutSessionView(APIView):
                 email=email,
                 user=user,
                 request=request,
+                promotion_code=data.get("promotion_code", "") or "",
             )
+        except CartValidationError as e:
+            # Promo validation failures are surfaced as CartValidationError
+            return error_response(e.code, status_code=400)
         except stripe.error.StripeError as e:
             logger.error("Stripe error: %s", e)
             return error_response("checkout.payment_error", status_code=502)

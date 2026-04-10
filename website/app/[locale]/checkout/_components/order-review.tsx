@@ -3,6 +3,7 @@
 import Image from "next/image";
 import type { CartItem } from "@/types/cart";
 import type enCheckout from "@/i18n/dictionaries/en/checkout.json";
+import { PromoCodeBox, type PromoState } from "@/components/cart/promo-code-box";
 
 interface OrderReviewProps {
   dict: typeof enCheckout;
@@ -18,10 +19,13 @@ interface OrderReviewProps {
   email: string;
   subtotal: number;
   shippingCost: number;
+  discountAmount: number;
+  promoCode: string;
   total: number;
   isSubmitting: boolean;
   onPlaceOrder: () => void;
   onEditShipping: () => void;
+  onPromoChange: (state: PromoState | null) => void;
 }
 
 function formatPrice(pence: number): string {
@@ -29,8 +33,10 @@ function formatPrice(pence: number): string {
 }
 
 export function OrderReview({
-  dict, items, shippingAddress, email, subtotal, shippingCost, total, isSubmitting, onPlaceOrder, onEditShipping,
+  dict, items, shippingAddress, email, subtotal, shippingCost, discountAmount, promoCode, total, isSubmitting, onPlaceOrder, onEditShipping, onPromoChange,
 }: OrderReviewProps) {
+  // Reference unused props so the future-proof signature stays intact
+  void promoCode;
   return (
     <div className="grid gap-8 md:grid-cols-[1fr_320px]">
       {/* Left — items + shipping */}
@@ -116,6 +122,20 @@ export function OrderReview({
               <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: shippingCost === 0 ? "var(--success)" : "var(--white)" }}>
                 {shippingCost === 0 ? dict.review.shippingFree : formatPrice(shippingCost)}
               </span>
+            </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between">
+                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--gold-dark)" }}>
+                  Discount
+                </span>
+                <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--gold-dark)" }}>
+                  −{formatPrice(discountAmount)}
+                </span>
+              </div>
+            )}
+
+            <div className="pt-1">
+              <PromoCodeBox email={email} onChange={onPromoChange} />
             </div>
           </div>
 

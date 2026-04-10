@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.http import JsonResponse
 from django.urls import include, path
 
@@ -13,7 +15,14 @@ urlpatterns = [
     path("api/v1/", include("apps.newsletter.urls")),
     path("api/v1/", include("apps.contact.urls")),
     path("api/v1/", include("apps.orders.urls")),
+    path("api/v1/", include("apps.promotions.urls")),
+    path("api/v1/admin/", include("apps.admin_panel.urls")),
 ]
+
+# Serve uploaded media files in dev (when not using Cloudinary).
+# In production with Cloudinary, files live on the CDN, not the Django server.
+if settings.DEBUG and not settings.CLOUDINARY_URL:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
 def handler404(request, exception):

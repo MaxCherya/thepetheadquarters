@@ -34,10 +34,10 @@
   "newsletter": {
     "label": "Stay Updated",
     "title": "Get 10% Off Your First Order",
-    "subtitle": "Subscribe to our newsletter for exclusive deals and new arrivals.",
+    "subtitle": "Subscribe to our newsletter — we'll email you a one-time 10% off code for your first order.",
     "placeholder": "Enter your email",
     "cta": "Subscribe",
-    "success": "You're in! Check your inbox for a welcome surprise.",
+    "success": "Check your inbox — your one-time 10% off code is on its way.",
     "alreadySubscribed": "You're already subscribed!",
     "error": "Something went wrong. Please try again.",
     "emailRequired": "Please enter your email address.",

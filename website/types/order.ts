@@ -17,6 +17,8 @@ export interface Order {
   email: string;
   subtotal: number;
   shipping_cost: number;
+  discount_amount: number;
+  promotion_code: string;
   total: number;
   created_at: string;
   paid_at: string | null;

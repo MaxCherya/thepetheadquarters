@@ -1,0 +1,102 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "products": "Products",
+    "inventory": "Inventory",
+    "customers": "Customers",
+    "suppliers": "Suppliers",
+    "purchaseOrders": "Purchase Orders",
+    "brands": "Brands",
+    "categories": "Categories",
+    "promotions": "Promotions",
+    "contactMessages": "Messages",
+    "reports": "Reports",
+    "audit": "Audit Log",
+    "backToStore": "Back to Store"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "todayOrders": "Today's Orders",
+    "todayRevenue": "Today's Revenue",
+    "pending": "Pending Orders",
+    "lowStock": "Low Stock",
+    "dropshipPending": "Dropship Pending",
+    "recentOrders": "Recent Orders",
+    "viewAll": "View All",
+    "noOrders": "No orders yet today."
+  },
+  "orders": {
+    "title": "Orders",
+    "filterStatus": "Status",
+    "filterAll": "All",
+    "search": "Search by order number or email",
+    "noOrders": "No orders found.",
+    "viewDetail": "View",
+    "actions": {
+      "ship": "Mark as Shipped",
+      "cancel": "Cancel Order",
+      "refund": "Refund",
+      "deliver": "Mark as Delivered",
+      "process": "Mark as Processing",
+      "saveNotes": "Save Notes",
+      "more": "More Actions"
+    },
+    "statuses": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "shipModal": {
+      "title": "Mark Order as Shipped",
+      "carrier": "Carrier",
+      "selectCarrier": "Select carrier",
+      "trackingNumber": "Tracking Number",
+      "trackingUrl": "Tracking URL",
+      "submit": "Confirm Shipment",
+      "cancel": "Cancel"
+    },
+    "carriers": {
+      "royal_mail": "Royal Mail",
+      "dpd": "DPD",
+      "evri": "Evri",
+      "ups": "UPS",
+      "other": "Other"
+    },
+    "errors": {
+      "ship_failed": "Failed to mark as shipped.",
+      "carrier_required": "Please select a carrier.",
+      "tracking_required": "Tracking number is required.",
+      "url_required": "Tracking URL is required for this carrier.",
+      "refund_failed": "Refund failed. Please try again.",
+      "no_payment_intent": "Cannot refund \u2014 no payment record."
+    }
+  },
+  "products": { "title": "Products" },
+  "inventory": { "title": "Inventory" },
+  "customers": { "title": "Customers" },
+  "suppliers": { "title": "Suppliers" },
+  "purchaseOrders": { "title": "Purchase Orders" },
+  "brands": { "title": "Brands" },
+  "categories": { "title": "Categories" },
+  "promotions": { "title": "Promotions" },
+  "reports": { "title": "Reports" },
+  "audit": { "title": "Audit Log" },
+  "contactMessages": { "title": "Contact Messages" },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "close": "Close",
+    "search": "Search",
+    "empty": "Nothing here yet."
+  }
+}

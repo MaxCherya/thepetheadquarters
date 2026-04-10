@@ -1,5 +1,6 @@
 import json
 import logging
+from decimal import Decimal
 
 import stripe
 from django.conf import settings
@@ -117,33 +118,111 @@ def calculate_shipping(subtotal_pence):
     return flat_rate
 
 
-def create_stripe_checkout_session(validated_items, shipping_address, email, user, request):
+def create_stripe_checkout_session(
+    validated_items,
+    shipping_address,
+    email,
+    user,
+    request,
+    promotion_code: str = "",
+):
     """
     Create a Stripe Checkout session from validated cart data.
     Cart data is stored in a PendingCheckout row; only its UUID is
     passed via Stripe metadata (Stripe limits metadata values to 500 chars).
-    Returns the session URL for redirect.
+
+    If `promotion_code` is supplied and valid, the discount is applied:
+      - For percent codes: each item's unit price is scaled down proportionally
+        so the final Stripe total matches our discounted total exactly.
+        Rounding leftovers are absorbed into the first eligible line item.
+      - For free shipping: the shipping line is omitted from Stripe.
+
+    Returns (checkout_url, session_id).
     """
     from apps.orders.models import PendingCheckout
+    from apps.promotions.services import (
+        PromotionError,
+        build_cart_lines_from_validated_items,
+        validate_code,
+    )
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
     subtotal = sum(item["line_total"] for item in validated_items)
     shipping_cost = calculate_shipping(subtotal)
-    total = subtotal + shipping_cost
 
-    # Build Stripe line items
+    # Validate the promo code (if any) — raises CartValidationError-style on failure
+    promotion_id = None
+    promotion_code_snapshot = ""
+    discount_amount = 0
+    free_shipping = False
+
+    if promotion_code:
+        cart_lines = build_cart_lines_from_validated_items(validated_items)
+        try:
+            promo_result = validate_code(
+                code=promotion_code,
+                cart_lines=cart_lines,
+                cart_subtotal=subtotal,
+                shipping_cost=shipping_cost,
+                user=user,
+                email=email,
+            )
+        except PromotionError as exc:
+            # Re-raise as CartValidationError for the view's error handler
+            raise CartValidationError(exc.code) from exc
+
+        promotion_id = str(promo_result.promotion.id)
+        promotion_code_snapshot = promo_result.promotion.code
+        discount_amount = promo_result.discount_amount
+        free_shipping = promo_result.applies_to_shipping
+
+    # Apply free-shipping discount before computing the total
+    effective_shipping = 0 if free_shipping else shipping_cost
+    # Cap discount so total never goes negative
+    item_discount = 0 if free_shipping else min(discount_amount, subtotal)
+    total = subtotal + effective_shipping - item_discount
+
+    # ---------------------------------------------------------------
+    # Build Stripe line items, scaling unit prices to match the
+    # discounted total. Each line gets its share of the discount in
+    # proportion to its line total; rounding leftovers are absorbed
+    # by the first eligible item so the sum is exact.
+    # ---------------------------------------------------------------
     line_items = []
-    for item in validated_items:
+    discount_remaining = item_discount
+
+    for index, item in enumerate(validated_items):
+        original_unit_price = item["unit_price"]
+        quantity = item["quantity"]
+        line_total = item["line_total"]
+
+        # Compute this line's share of the discount
+        if subtotal > 0 and item_discount > 0:
+            if index == len(validated_items) - 1:
+                # Last item soaks up any rounding remainder
+                line_share = discount_remaining
+            else:
+                line_share = (line_total * item_discount) // subtotal
+            discount_remaining -= line_share
+        else:
+            line_share = 0
+
+        adjusted_line_total = max(0, line_total - line_share)
+        # Distribute back into per-unit price (Stripe needs unit_amount × quantity)
+        adjusted_unit_price = adjusted_line_total // quantity
+        # Per-unit floor leaves a remainder; Stripe Checkout requires a single
+        # unit_amount per line, so we accept up to (quantity - 1) pence of
+        # absorbed rounding which we'll compensate via a separate line below.
+        leftover = adjusted_line_total - adjusted_unit_price * quantity
+
         line_item = {
             "price_data": {
                 "currency": "gbp",
-                "unit_amount": item["unit_price"],
-                "product_data": {
-                    "name": item["product_name"],
-                },
+                "unit_amount": adjusted_unit_price,
+                "product_data": {"name": item["product_name"]},
             },
-            "quantity": item["quantity"],
+            "quantity": quantity,
         }
         if item["image_url"]:
             line_item["price_data"]["product_data"]["images"] = [item["image_url"]]
@@ -151,12 +230,24 @@ def create_stripe_checkout_session(validated_items, shipping_address, email, use
             line_item["price_data"]["product_data"]["description"] = item["option_label"]
         line_items.append(line_item)
 
-    # Add shipping as a line item if applicable
-    if shipping_cost > 0:
+        # If the floor division left a few pence on the table, add a tiny
+        # adjustment line so the Stripe total still matches `total` exactly.
+        if leftover > 0:
+            line_items.append({
+                "price_data": {
+                    "currency": "gbp",
+                    "unit_amount": leftover,
+                    "product_data": {"name": "Rounding adjustment"},
+                },
+                "quantity": 1,
+            })
+
+    # Add shipping as a line item (only if not waived by free_shipping promo)
+    if effective_shipping > 0:
         line_items.append({
             "price_data": {
                 "currency": "gbp",
-                "unit_amount": shipping_cost,
+                "unit_amount": effective_shipping,
                 "product_data": {"name": "Standard Delivery"},
             },
             "quantity": 1,
@@ -185,7 +276,10 @@ def create_stripe_checkout_session(validated_items, shipping_address, email, use
         items_data=items_data,
         shipping_data=shipping_address,
         subtotal=subtotal,
-        shipping_cost=shipping_cost,
+        shipping_cost=effective_shipping,
+        discount_amount=item_discount + (shipping_cost if free_shipping else 0),
+        promotion_id=promotion_id,
+        promotion_code=promotion_code_snapshot,
         total=total,
     )
 
@@ -239,11 +333,24 @@ def fulfill_order(session):
     subtotal = pending.subtotal
     shipping_cost = pending.shipping_cost
     total = pending.total
+    discount_amount = pending.discount_amount or 0
+    promotion_code_snapshot = pending.promotion_code or ""
+    promotion_id = pending.promotion_id
 
     try:
         payment_intent_id = session["payment_intent"] or ""
     except (KeyError, TypeError):
         payment_intent_id = ""
+
+    # VAT calculation (prices include VAT — extract VAT portion from total)
+    vat_rate = Decimal(str(getattr(settings, "VAT_RATE", 0.20)))
+    if getattr(settings, "PRICES_INCLUDE_VAT", True):
+        # vat = total × (rate / (1 + rate))
+        vat_amount = int(round(total * float(vat_rate / (1 + vat_rate))))
+    else:
+        vat_amount = int(round(total * float(vat_rate)))
+
+    from apps.procurement.services import consume_fifo
 
     with transaction.atomic():
         # Create order
@@ -262,15 +369,28 @@ def fulfill_order(session):
             shipping_phone=shipping_data.get("phone", ""),
             subtotal=subtotal,
             shipping_cost=shipping_cost,
+            discount_amount=discount_amount,
+            promotion_code=promotion_code_snapshot,
             total=total,
+            vat_amount=vat_amount,
+            vat_rate=vat_rate,
             stripe_checkout_session_id=session_id,
             stripe_payment_intent_id=payment_intent_id,
             paid_at=timezone.now(),
         )
 
-        # Create order items and decrement stock
+        # Create order items, decrement stock, calculate COGS via FIFO
         for item_data in items_data:
-            OrderItem.objects.create(
+            fulfillment_type = item_data.get("fulfillment_type", "self")
+
+            # Per-item VAT (proportional to line total)
+            item_line_total = item_data["line_total"]
+            if getattr(settings, "PRICES_INCLUDE_VAT", True):
+                item_vat = int(round(item_line_total * float(vat_rate / (1 + vat_rate))))
+            else:
+                item_vat = int(round(item_line_total * float(vat_rate)))
+
+            order_item = OrderItem.objects.create(
                 order=order,
                 product_id=item_data["product_id"],
                 variant_id=item_data["variant_id"],
@@ -279,24 +399,59 @@ def fulfill_order(session):
                 variant_option_label=item_data.get("option_label", ""),
                 unit_price=item_data["unit_price"],
                 quantity=item_data["quantity"],
-                line_total=item_data["line_total"],
+                line_total=item_line_total,
+                vat_amount=item_vat,
                 image_url=item_data.get("image_url", ""),
-                fulfillment_type=item_data.get("fulfillment_type", "self"),
+                fulfillment_type=fulfillment_type,
             )
 
-            # Atomic stock decrement
-            updated = (
-                ProductVariant.objects
-                .filter(id=item_data["variant_id"], stock_quantity__gte=item_data["quantity"])
-                .update(stock_quantity=F("stock_quantity") - item_data["quantity"])
-            )
-            if not updated:
-                logger.warning(
-                    "Stock insufficient for variant %s during fulfillment (order %s). "
-                    "Order created but stock may be oversold.",
-                    item_data["variant_sku"],
-                    order.order_number,
+            # For self-fulfilled items: decrement stock and calculate COGS via FIFO.
+            # For dropship items: skip stock decrement (we never held them) and skip COGS
+            # (it'll be set when admin forwards to supplier).
+            if fulfillment_type != "dropship":
+                try:
+                    variant = ProductVariant.objects.select_for_update().get(
+                        id=item_data["variant_id"]
+                    )
+                except ProductVariant.DoesNotExist:
+                    logger.warning(
+                        "Variant %s missing during fulfillment of %s",
+                        item_data["variant_id"], order.order_number,
+                    )
+                    continue
+
+                if variant.stock_quantity < item_data["quantity"]:
+                    logger.warning(
+                        "Stock insufficient for variant %s during fulfillment (order %s).",
+                        item_data["variant_sku"], order.order_number,
+                    )
+
+                # Atomic stock decrement
+                ProductVariant.objects.filter(id=variant.id).update(
+                    stock_quantity=F("stock_quantity") - item_data["quantity"]
                 )
+
+                # FIFO COGS calculation + StockMovement records
+                cogs = consume_fifo(
+                    variant=variant,
+                    quantity_to_consume=item_data["quantity"],
+                    order_item=order_item,
+                )
+                order_item.cogs_amount = cogs
+                order_item.save(update_fields=["cogs_amount"])
+
+        # Record promotion redemption (idempotent on (promotion, order))
+        if promotion_id and discount_amount > 0:
+            from apps.promotions.services import redeem as redeem_promotion
+
+            redeem_promotion(
+                promotion_id=promotion_id,
+                order=order,
+                user=order.user,
+                guest_email=email if not order.user_id else "",
+                discount_amount=discount_amount,
+                subtotal=subtotal,
+            )
 
         # Mark PendingCheckout consumed (within the transaction)
         pending.consumed_at = timezone.now()

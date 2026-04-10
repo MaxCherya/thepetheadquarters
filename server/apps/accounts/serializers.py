@@ -42,9 +42,10 @@ class ProfileSerializer(serializers.ModelSerializer):
             "last_name",
             "phone",
             "is_email_verified",
+            "is_staff",
             "created_at",
         ]
-        read_only_fields = ["id", "email", "is_email_verified", "created_at"]
+        read_only_fields = ["id", "email", "is_email_verified", "is_staff", "created_at"]
 
 
 class ProfileUpdateSerializer(serializers.Serializer):

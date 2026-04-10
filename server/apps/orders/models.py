@@ -22,10 +22,22 @@ class PendingCheckout(BaseModel):
     subtotal = models.PositiveIntegerField()
     shipping_cost = models.PositiveIntegerField()
     total = models.PositiveIntegerField()
+    # Promotion snapshot — applied at session creation, consumed in webhook.
+    promotion_id = models.UUIDField(null=True, blank=True)
+    promotion_code = models.CharField(max_length=64, blank=True, default="")
+    discount_amount = models.PositiveIntegerField(default=0)
     consumed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta(BaseModel.Meta):
         pass
+
+
+CARRIER_TRACKING_URLS = {
+    "royal_mail": "https://www.royalmail.com/track-your-item#/tracking-results/{number}",
+    "dpd": "https://track.dpd.co.uk/parcels/{number}",
+    "evri": "https://www.evri.com/track/parcel/{number}",
+    "ups": "https://www.ups.com/track?tracknum={number}",
+}
 
 
 class Order(BaseModel):
@@ -36,6 +48,13 @@ class Order(BaseModel):
         SHIPPED = "shipped", "Shipped"
         DELIVERED = "delivered", "Delivered"
         CANCELLED = "cancelled", "Cancelled"
+
+    class Carrier(models.TextChoices):
+        ROYAL_MAIL = "royal_mail", "Royal Mail"
+        DPD = "dpd", "DPD"
+        EVRI = "evri", "Evri"
+        UPS = "ups", "UPS"
+        OTHER = "other", "Other"
 
     order_number = models.CharField(max_length=12, unique=True, db_index=True)
 
@@ -66,7 +85,15 @@ class Order(BaseModel):
     # Totals in pence
     subtotal = models.PositiveIntegerField()
     shipping_cost = models.PositiveIntegerField()
+    discount_amount = models.PositiveIntegerField(default=0)
     total = models.PositiveIntegerField()
+
+    # Promotion snapshot — kept on the order even if Promotion row is later deleted
+    promotion_code = models.CharField(max_length=64, blank=True, default="", db_index=True)
+
+    # VAT (UK) — VAT is included in subtotal/total (PRICES_INCLUDE_VAT)
+    vat_amount = models.PositiveIntegerField(default=0)
+    vat_rate = models.DecimalField(max_digits=5, decimal_places=4, default=0)
 
     # Stripe
     stripe_checkout_session_id = models.CharField(
@@ -74,14 +101,41 @@ class Order(BaseModel):
     )
     stripe_payment_intent_id = models.CharField(max_length=255, blank=True)
 
+    # Tracking
+    tracking_carrier = models.CharField(
+        max_length=20, choices=Carrier.choices, blank=True, default="",
+    )
+    tracking_number = models.CharField(max_length=100, blank=True, default="")
+    tracking_url = models.URLField(max_length=500, blank=True, default="")
+
+    # Lifecycle timestamps
     paid_at = models.DateTimeField(null=True, blank=True)
+    shipped_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    refunded_at = models.DateTimeField(null=True, blank=True)
+    refund_amount = models.PositiveIntegerField(default=0)
+
     notes = models.TextField(blank=True)
+    internal_notes = models.TextField(blank=True, default="")
 
     class Meta(BaseModel.Meta):
         pass
 
     def __str__(self):
         return self.order_number
+
+    @property
+    def tracking_link(self):
+        """Return derived tracking URL for the carrier, or stored URL for 'other'."""
+        if not self.tracking_carrier:
+            return ""
+        if self.tracking_carrier == self.Carrier.OTHER:
+            return self.tracking_url
+        template = CARRIER_TRACKING_URLS.get(self.tracking_carrier, "")
+        if template and self.tracking_number:
+            return template.format(number=self.tracking_number)
+        return ""
 
     @staticmethod
     def generate_order_number():
@@ -124,6 +178,12 @@ class OrderItem(BaseModel):
     line_total = models.PositiveIntegerField()
     image_url = models.URLField(max_length=500, blank=True)
 
+    # VAT snapshot
+    vat_amount = models.PositiveIntegerField(default=0)
+
+    # COGS — populated on fulfillment from FIFO consumption
+    cogs_amount = models.PositiveIntegerField(default=0)
+
     # Per-item fulfillment for mixed self/dropship orders
     fulfillment_type = models.CharField(max_length=10, default="self")
     fulfillment_status = models.CharField(
@@ -131,6 +191,11 @@ class OrderItem(BaseModel):
         choices=FulfillmentStatus.choices,
         default=FulfillmentStatus.PENDING,
     )
+
+    # Dropship — supplier link captured when forwarded
+    supplier_id = models.UUIDField(null=True, blank=True, db_index=True)
+    supplier_cost = models.PositiveIntegerField(default=0)
+    forwarded_to_supplier_at = models.DateTimeField(null=True, blank=True)
 
     class Meta(BaseModel.Meta):
         pass

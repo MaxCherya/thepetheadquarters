@@ -1,0 +1,167 @@
+export type AdminOrderStatus =
+  | "pending"
+  | "paid"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "cancelled";
+
+export type CarrierCode = "royal_mail" | "dpd" | "evri" | "ups" | "other";
+
+export const CARRIER_LABELS: Record<CarrierCode, string> = {
+  royal_mail: "Royal Mail",
+  dpd: "DPD",
+  evri: "Evri",
+  ups: "UPS",
+  other: "Other",
+};
+
+export interface AdminOrderListItem {
+  id: string;
+  order_number: string;
+  status: AdminOrderStatus;
+  email: string;
+  customer_name: string;
+  total: number;
+  vat_amount: number;
+  item_count: number;
+  tracking_carrier: string;
+  tracking_number: string;
+  created_at: string;
+  paid_at: string | null;
+  shipped_at: string | null;
+}
+
+export interface AdminOrderItem {
+  id: string;
+  product_id: string | null;
+  variant_id: string | null;
+  product_name: string;
+  variant_sku: string;
+  variant_option_label: string;
+  unit_price: number;
+  quantity: number;
+  line_total: number;
+  vat_amount: number;
+  cogs_amount: number;
+  image_url: string;
+  fulfillment_type: "self" | "dropship";
+  fulfillment_status: "pending" | "processing" | "shipped" | "delivered";
+  supplier_id: string | null;
+  supplier_cost: number;
+  forwarded_to_supplier_at: string | null;
+}
+
+export interface AdminOrder {
+  id: string;
+  order_number: string;
+  status: AdminOrderStatus;
+  email: string;
+  customer_id: string | null;
+  user_id: string | null;
+  shipping_full_name: string;
+  shipping_address_line_1: string;
+  shipping_address_line_2: string;
+  shipping_city: string;
+  shipping_county: string;
+  shipping_postcode: string;
+  shipping_country: string;
+  shipping_phone: string;
+  subtotal: number;
+  shipping_cost: number;
+  vat_amount: number;
+  vat_rate: string;
+  total: number;
+  stripe_checkout_session_id: string;
+  stripe_payment_intent_id: string;
+  tracking_carrier: string;
+  tracking_number: string;
+  tracking_url: string;
+  tracking_link: string;
+  paid_at: string | null;
+  shipped_at: string | null;
+  delivered_at: string | null;
+  cancelled_at: string | null;
+  refunded_at: string | null;
+  refund_amount: number;
+  internal_notes: string;
+  created_at: string;
+  updated_at: string;
+  items: AdminOrderItem[];
+}
+
+export interface AdminDashboard {
+  today: {
+    orders_count: number;
+    revenue_pence: number;
+    pending_count: number;
+  };
+  low_stock_count: number;
+  dropship_pending_count: number;
+  unread_messages_count: number;
+  recent_orders: AdminOrderListItem[];
+}
+
+export type PromotionDiscountType = "percent" | "free_shipping";
+export type PromotionScope = "all" | "category" | "brand" | "product";
+export type PromotionSource =
+  | "newsletter"
+  | "influencer"
+  | "manual"
+  | "campaign"
+  | "referral";
+
+export interface AdminPromotionListItem {
+  id: string;
+  code: string;
+  name: string;
+  discount_type: PromotionDiscountType;
+  discount_value: number;
+  scope: PromotionScope;
+  min_subtotal: number;
+  is_first_order_only: boolean;
+  is_one_per_customer: boolean;
+  starts_at: string | null;
+  ends_at: string | null;
+  max_uses_total: number | null;
+  max_uses_per_user: number | null;
+  times_used: number;
+  is_active: boolean;
+  source: PromotionSource;
+  campaign_label: string;
+  created_at: string;
+}
+
+export interface AdminPromotion extends AdminPromotionListItem {
+  description: string;
+  scope_category_ids: string[];
+  scope_brand_ids: string[];
+  scope_product_ids: string[];
+  updated_at: string;
+  summary: {
+    redemption_count: number;
+    total_discount_pence: number;
+    total_revenue_pence: number;
+  };
+}
+
+export interface AdminPromotionRedemption {
+  id: string;
+  order_number: string;
+  order_total: number;
+  customer_email: string;
+  discount_amount: number;
+  subtotal_at_use: number;
+  created_at: string;
+}
+
+export interface AdminContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  updated_at: string;
+}

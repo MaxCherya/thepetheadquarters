@@ -9,6 +9,7 @@ import { apiClient, ApiError } from "@/lib/api-client";
 import { endpoints } from "@/config/endpoints";
 import type { Address } from "@/types/auth";
 import type enCheckout from "@/i18n/dictionaries/en/checkout.json";
+import type { PromoState } from "@/components/cart/promo-code-box";
 import { ShippingForm } from "./shipping-form";
 import { AddressSelector } from "./address-selector";
 import { OrderReview } from "./order-review";
@@ -44,6 +45,7 @@ export function CheckoutContent({ dict }: CheckoutContentProps) {
   const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
   const [useNewAddress, setUseNewAddress] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
+  const [promo, setPromo] = useState<PromoState | null>(null);
 
   // Redirect to cart if empty
   useEffect(() => {
@@ -62,8 +64,13 @@ export function CheckoutContent({ dict }: CheckoutContentProps) {
     }
   }, [isAuthenticated]);
 
-  const shippingCost = subtotal >= FREE_THRESHOLD ? 0 : SHIPPING_RATE;
-  const total = subtotal + shippingCost;
+  const baseShippingCost = subtotal >= FREE_THRESHOLD ? 0 : SHIPPING_RATE;
+  const freeShippingFromPromo = promo?.appliesToShipping ?? false;
+  const shippingCost = freeShippingFromPromo ? 0 : baseShippingCost;
+  const itemDiscount = freeShippingFromPromo ? 0 : Math.min(promo?.discountAmount ?? 0, subtotal);
+  const shippingDiscount = freeShippingFromPromo ? baseShippingCost : 0;
+  const totalDiscount = itemDiscount + shippingDiscount;
+  const total = subtotal + shippingCost - itemDiscount;
 
   function handleShippingSubmit(address: ShippingData, email?: string, addressId?: string) {
     setShippingAddress(address);
@@ -109,6 +116,10 @@ export function CheckoutContent({ dict }: CheckoutContentProps) {
         payload.saved_address_id = savedAddressId;
       }
 
+      if (promo?.code) {
+        payload.promotion_code = promo.code;
+      }
+
       const res = await apiClient.post<{
         status: string;
         data: { checkout_url: string; session_id: string };
@@ -128,6 +139,9 @@ export function CheckoutContent({ dict }: CheckoutContentProps) {
           toast.warning(dict.errors.insufficient_stock);
         } else if (code.includes("stripe_not_configured")) {
           toast.warning(dict.errors.stripe_not_configured);
+        } else if (code.startsWith("promo.")) {
+          toast.warning("Your promo code is no longer valid. Please remove it and try again.");
+          setPromo(null);
         } else {
           toast.danger(dict.errors.payment_error);
         }
@@ -192,10 +206,13 @@ export function CheckoutContent({ dict }: CheckoutContentProps) {
       email={isAuthenticated ? user!.email : guestEmail}
       subtotal={subtotal}
       shippingCost={shippingCost}
+      discountAmount={totalDiscount}
+      promoCode={promo?.code || ""}
       total={total}
       isSubmitting={isSubmitting}
       onPlaceOrder={handlePlaceOrder}
       onEditShipping={() => setStep("shipping")}
+      onPromoChange={setPromo}
     />
   );
 }

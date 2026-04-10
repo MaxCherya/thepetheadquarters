@@ -42,6 +42,11 @@ LOCAL_APPS = [
     "apps.newsletter",
     "apps.contact",
     "apps.orders",
+    "apps.suppliers",
+    "apps.procurement",
+    "apps.promotions",
+    "apps.audit",
+    "apps.admin_panel",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -59,6 +64,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.core.middleware.CacheControlMiddleware",
+    "apps.audit.middleware.AuditContextMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -173,6 +179,14 @@ SHIPPING_FLAT_RATE_PENCE = config("SHIPPING_FLAT_RATE_PENCE", default=399, cast=
 SHIPPING_FREE_THRESHOLD_PENCE = config("SHIPPING_FREE_THRESHOLD_PENCE", default=3000, cast=int)
 
 # ---------------------------------------------------------------------------
+# VAT (UK)
+# ---------------------------------------------------------------------------
+VAT_RATE = config("VAT_RATE", default=0.20, cast=float)
+PRICES_INCLUDE_VAT = config("PRICES_INCLUDE_VAT", default=True, cast=bool)
+VAT_REGISTERED = config("VAT_REGISTERED", default=True, cast=bool)
+COMPANY_VAT_NUMBER = config("COMPANY_VAT_NUMBER", default="")
+
+# ---------------------------------------------------------------------------
 # i18n
 # ---------------------------------------------------------------------------
 LANGUAGE_CODE = "en-gb"
@@ -187,6 +201,24 @@ USE_TZ = True
 # Static
 # ---------------------------------------------------------------------------
 STATIC_URL = "static/"
+
+# ---------------------------------------------------------------------------
+# Media (uploaded files)
+# ---------------------------------------------------------------------------
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# ---------------------------------------------------------------------------
+# Cloudinary (production image storage)
+# ---------------------------------------------------------------------------
+# If CLOUDINARY_URL is set, uploads go to Cloudinary CDN.
+# Otherwise images are stored locally in MEDIA_ROOT (dev fallback).
+# Format: cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+CLOUDINARY_URL = config("CLOUDINARY_URL", default="")
+
+if CLOUDINARY_URL:
+    import cloudinary
+    cloudinary.config(secure=True)  # auto-reads CLOUDINARY_URL from env
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
