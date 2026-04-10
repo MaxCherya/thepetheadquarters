@@ -57,6 +57,8 @@ class RegisterView(APIView):
     throttle_classes = [RegisterThrottle]
 
     def post(self, request):
+        from apps.orders.services import link_guest_orders_to_user
+
         serializer = RegisterSerializer(data=request.data)
         if not serializer.is_valid():
             return validation_error_response(serializer.errors)
@@ -73,6 +75,10 @@ class RegisterView(APIView):
 
         token = EmailVerificationToken.generate(user)
         send_verification_email(user, token)
+
+        # Attach any guest orders that were placed with this email so the new
+        # account picks up its purchase history (review eligibility, order list).
+        link_guest_orders_to_user(user)
 
         response = created_response(
             data=ProfileSerializer(user).data,
@@ -97,6 +103,11 @@ class LoginView(APIView):
 
         if user is None or not user.is_active:
             return error_response("auth.invalid_credentials", status_code=401)
+
+        # Attach any guest orders sharing this email so order history and
+        # review eligibility immediately reflect prior guest purchases.
+        from apps.orders.services import link_guest_orders_to_user
+        link_guest_orders_to_user(user)
 
         response = success_response(
             data=ProfileSerializer(user).data,

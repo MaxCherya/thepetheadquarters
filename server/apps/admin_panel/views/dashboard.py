@@ -7,6 +7,7 @@ from apps.core.responses import success_response
 from apps.contact.models import ContactMessage
 from apps.orders.models import Order, OrderItem
 from apps.products.models import ProductVariant
+from apps.reviews.models import Review
 
 from apps.admin_panel.views.base import AdminBaseView
 
@@ -46,6 +47,9 @@ class DashboardView(AdminBaseView):
         )
 
         unread_messages_count = ContactMessage.objects.filter(is_read=False).count()
+        reviews_pending_reply_count = Review.objects.filter(
+            is_visible=True, admin_reply=""
+        ).count()
 
         # Recent orders (last 5)
         from apps.admin_panel.serializers.orders import AdminOrderListSerializer
@@ -67,6 +71,7 @@ class DashboardView(AdminBaseView):
                 "low_stock_count": low_stock_count,
                 "dropship_pending_count": dropship_pending,
                 "unread_messages_count": unread_messages_count,
+                "reviews_pending_reply_count": reviews_pending_reply_count,
                 "recent_orders": recent_serialized,
             }
         )

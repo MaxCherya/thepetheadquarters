@@ -99,7 +99,25 @@ export interface AdminDashboard {
   low_stock_count: number;
   dropship_pending_count: number;
   unread_messages_count: number;
+  reviews_pending_reply_count: number;
   recent_orders: AdminOrderListItem[];
+}
+
+export interface AdminReview {
+  id: string;
+  product_name: string;
+  product_slug: string;
+  customer_name: string;
+  customer_email: string;
+  rating: number;
+  title: string;
+  body: string;
+  is_visible: boolean;
+  helpful_count: number;
+  admin_reply: string;
+  admin_reply_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export type PromotionDiscountType = "percent" | "free_shipping";
@@ -126,6 +144,7 @@ export interface AdminPromotionListItem {
   max_uses_total: number | null;
   max_uses_per_user: number | null;
   times_used: number;
+  click_count: number;
   is_active: boolean;
   source: PromotionSource;
   campaign_label: string;
@@ -142,6 +161,8 @@ export interface AdminPromotion extends AdminPromotionListItem {
     redemption_count: number;
     total_discount_pence: number;
     total_revenue_pence: number;
+    click_count: number;
+    conversion_rate: number | null;
   };
 }
 

@@ -1,0 +1,16 @@
+Your order is on the way — {{ order.order_number }}
+
+Hi,
+
+Your order has been dispatched and is on its way to you.
+
+Order: {{ order.order_number }}
+{% if carrier_label %}Carrier: {{ carrier_label }}
+{% endif %}{% if order.tracking_number %}Tracking number: {{ order.tracking_number }}
+{% endif %}{% if tracking_url %}Track your parcel: {{ tracking_url }}
+{% endif %}
+Total: {{ total_display }}
+
+View your order: {{ order_url }}
+
+— {{ site_name }}

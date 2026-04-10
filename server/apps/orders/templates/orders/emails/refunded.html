@@ -1,0 +1,14 @@
+{% extends "orders/emails/_base.html" %}
+
+{% block headline %}Refund issued{% endblock %}
+
+{% block intro %}
+<p style="font-size:15px;line-height:1.6;color:#2D2D2D;margin-top:0;">
+  We've issued a refund of <strong>{{ refund_display }}</strong> back to your original payment method.
+</p>
+<p style="font-size:13px;line-height:1.6;color:#555555;margin-top:0;">
+  Refunds typically take 3–5 business days to appear on your statement, depending on your bank.
+</p>
+{% endblock %}
+
+{% block cta %}View Order{% endblock %}

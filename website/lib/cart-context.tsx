@@ -76,7 +76,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (loaded) saveCart(items);
   }, [items, loaded]);
 
-  // Auto-apply ?promo=CODE from the URL on first mount.
+  // Auto-apply ?promo=CODE from the URL on first mount + fire-and-forget click tracking.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
@@ -85,6 +85,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       const upper = queryCode.trim().toUpperCase();
       setPromotionCodeState(upper);
       savePromo(upper);
+
+      // Fire-and-forget click tracking — never block the page on this.
+      // Use the API base from the same env var the rest of the app uses.
+      const apiBase =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+      void fetch(`${apiBase}/promotions/track-click/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: upper }),
+        keepalive: true,
+      }).catch(() => {});
     }
   }, []);
 

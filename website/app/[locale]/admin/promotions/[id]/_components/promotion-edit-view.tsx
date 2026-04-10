@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
-import { Trash2, ArrowLeft, BarChart2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Trash2, ArrowLeft, BarChart2, Copy, Check } from "lucide-react";
 import { toast } from "@heroui/react";
 import {
   useAdminPromotion,
@@ -34,8 +34,6 @@ function formatDateTime(s: string): string {
 
 export function PromotionEditView({ promotionId }: PromotionEditViewProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const locale = pathname.split("/")[1] || "en";
 
   const { data: promotion, isLoading } = useAdminPromotion(promotionId);
   const { data: redemptions } = useAdminPromotionRedemptions(promotionId);
@@ -44,6 +42,7 @@ export function PromotionEditView({ promotionId }: PromotionEditViewProps) {
   const deleteMutation = useDeletePromotion();
 
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   if (isLoading || !promotion) {
     return (
@@ -89,7 +88,20 @@ export function PromotionEditView({ promotionId }: PromotionEditViewProps) {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+        <div className="rounded-lg" style={{ background: "var(--bg-secondary)", border: "1px solid var(--bg-border)", padding: "var(--space-5)" }}>
+          <div className="mb-2 flex items-center justify-between">
+            <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-xs)", color: "var(--white-faint)", textTransform: "uppercase", letterSpacing: "var(--tracking-wide)" }}>
+              Link clicks
+            </span>
+          </div>
+          <p style={{ fontFamily: "var(--font-cormorant)", fontSize: "var(--text-3xl)", color: "var(--white)" }}>
+            {summary.click_count}
+          </p>
+          <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "var(--white-faint)", marginTop: "var(--space-1)" }}>
+            People who opened the share link
+          </p>
+        </div>
         <div className="rounded-lg" style={{ background: "var(--bg-secondary)", border: "1px solid var(--bg-border)", padding: "var(--space-5)" }}>
           <div className="mb-2 flex items-center justify-between">
             <span style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-xs)", color: "var(--white-faint)", textTransform: "uppercase", letterSpacing: "var(--tracking-wide)" }}>
@@ -103,6 +115,11 @@ export function PromotionEditView({ promotionId }: PromotionEditViewProps) {
               <span style={{ fontSize: "var(--text-base)", color: "var(--white-faint)" }}> / {promotion.max_uses_total}</span>
             ) : null}
           </p>
+          {summary.conversion_rate !== null && (
+            <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "10px", color: "var(--gold-dark)", marginTop: "var(--space-1)" }}>
+              {summary.conversion_rate}% click → buy
+            </p>
+          )}
         </div>
         <div className="rounded-lg" style={{ background: "var(--bg-secondary)", border: "1px solid var(--bg-border)", padding: "var(--space-5)" }}>
           <div className="mb-2 flex items-center justify-between">
@@ -136,12 +153,15 @@ export function PromotionEditView({ promotionId }: PromotionEditViewProps) {
         </div>
       </div>
 
+      {/* Share link */}
+      <ShareLinkCard code={promotion.code} copied={copied} setCopied={setCopied} />
+
       {/* Edit form */}
       <PromotionForm
         initial={promotion}
         submitting={updateMutation.isPending}
         submitLabel="Save changes"
-        onCancel={() => router.push(`/${locale}/admin/promotions`)}
+        onCancel={() => router.push("/admin/promotions")}
         onSubmit={async (data) => {
           try {
             await updateMutation.mutateAsync(data);
@@ -211,13 +231,122 @@ export function PromotionEditView({ promotionId }: PromotionEditViewProps) {
           try {
             await deleteMutation.mutateAsync(promotionId);
             toast.success(promotion.times_used > 0 ? "Deactivated" : "Deleted");
-            router.push(`/${locale}/admin/promotions`);
+            router.push("/admin/promotions");
           } catch {
             toast.danger("Action failed");
           }
         }}
         onCancel={() => setConfirmDelete(false)}
       />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Share link card
+// ---------------------------------------------------------------------------
+interface ShareLinkCardProps {
+  code: string;
+  copied: boolean;
+  setCopied: (v: boolean) => void;
+}
+
+function ShareLinkCard({ code, copied, setCopied }: ShareLinkCardProps) {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const shareUrl = `${origin}/?promo=${encodeURIComponent(code)}`;
+
+  async function copyToClipboard() {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      toast.success("Link copied");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.danger("Could not copy. Please copy the link manually.");
+    }
+  }
+
+  return (
+    <div
+      className="rounded-lg"
+      style={{
+        background: "var(--bg-secondary)",
+        border: "1px solid var(--bg-border)",
+        padding: "var(--space-6)",
+      }}
+    >
+      <h2
+        className="mb-1"
+        style={{
+          fontFamily: "var(--font-cormorant)",
+          fontSize: "var(--text-xl)",
+          color: "var(--white)",
+        }}
+      >
+        Share link
+      </h2>
+      <p
+        className="mb-4"
+        style={{
+          fontFamily: "var(--font-montserrat)",
+          fontSize: "11px",
+          color: "var(--white-faint)",
+          lineHeight: "var(--leading-relaxed)",
+        }}
+      >
+        Send this URL to influencers, partners, or anyone running the campaign.
+        When someone opens it, the code is auto-applied to their cart and we
+        record a click against this promotion. Conversions show up in the
+        redemption history below as soon as the customer pays.
+      </p>
+
+      <div className="flex flex-col gap-2 sm:flex-row">
+        <input
+          readOnly
+          value={shareUrl}
+          onFocus={(e) => e.currentTarget.select()}
+          className="w-full min-w-0 flex-1 outline-none"
+          style={{
+            background: "var(--bg-tertiary)",
+            border: "1px solid var(--bg-border)",
+            color: "var(--white)",
+            fontFamily: "monospace",
+            fontSize: "var(--text-xs)",
+            borderRadius: "var(--radius-md)",
+            padding: "var(--space-3) var(--space-4)",
+          }}
+        />
+        <button
+          type="button"
+          onClick={copyToClipboard}
+          className="flex w-full items-center justify-center gap-2 rounded-md px-4 py-3 sm:w-auto sm:py-0"
+          style={{
+            background: copied ? "var(--success)" : "var(--gold)",
+            color: "#FFFFFF",
+            fontFamily: "var(--font-montserrat)",
+            fontSize: "var(--text-xs)",
+            fontWeight: "var(--weight-semibold)",
+            textTransform: "uppercase",
+            letterSpacing: "var(--tracking-wide)",
+            flexShrink: 0,
+          }}
+        >
+          {copied ? <Check size={14} /> : <Copy size={14} />}
+          {copied ? "Copied" : "Copy link"}
+        </button>
+      </div>
+
+      <p
+        className="mt-3"
+        style={{
+          fontFamily: "var(--font-montserrat)",
+          fontSize: "10px",
+          color: "var(--white-faint)",
+        }}
+      >
+        Customers can also type{" "}
+        <code style={{ color: "var(--gold-dark)" }}>{code}</code> at checkout.
+      </p>
     </div>
   );
 }

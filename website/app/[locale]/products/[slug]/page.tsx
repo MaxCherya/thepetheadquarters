@@ -135,6 +135,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
           attributes={attributes}
           dict={dict.details}
           reviewCount={product.review_count}
+          slug={product.slug}
         />
 
         {/* Related Products */}

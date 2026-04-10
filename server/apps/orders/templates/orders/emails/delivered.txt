@@ -1,0 +1,14 @@
+Your order has been delivered — {{ order.order_number }}
+
+Hi,
+
+Your order has been delivered. We hope you and your pet love it.
+
+If anything isn't right, just reply to this email and we'll sort it out.
+
+Order: {{ order.order_number }}
+Total: {{ total_display }}
+
+View your order: {{ order_url }}
+
+— {{ site_name }}

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Package, Clock, AlertTriangle, Truck, TrendingUp, Mail } from "lucide-react";
+import { Package, Clock, AlertTriangle, Truck, TrendingUp, Mail, Star } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { endpoints } from "@/config/endpoints";
 import { adminOrderKeys } from "@/hooks/use-admin-orders";
@@ -97,6 +97,13 @@ export function DashboardContent({ dict }: DashboardContentProps) {
       value: String(data.unread_messages_count),
       icon: Mail,
       warning: data.unread_messages_count > 0,
+    },
+    {
+      key: "reviews",
+      label: "Reviews to Reply",
+      value: String(data.reviews_pending_reply_count),
+      icon: Star,
+      warning: data.reviews_pending_reply_count > 0,
     },
   ];
 

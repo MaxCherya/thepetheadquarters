@@ -7,7 +7,9 @@ import logging
 
 import stripe
 from django.conf import settings
+from django.core.mail import send_mail
 from django.db import transaction
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 from apps.orders.models import Order, OrderItem
@@ -30,69 +32,132 @@ def _is_console_email():
     )
 
 
-def _send_shipped_email(order):
-    """Console-friendly shipped email — full SMTP template can be added later."""
-    if _is_console_email():
-        logger.info(
-            "\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "  📦 Order Shipped — %s\n"
-            "  🚚 Carrier: %s\n"
-            "  📋 Tracking: %s\n"
-            "  🔗 %s\n"
-            "  📬 To: %s\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            order.order_number,
-            order.get_tracking_carrier_display() if order.tracking_carrier else "N/A",
-            order.tracking_number or "(URL only)",
-            order.tracking_link or order.tracking_url,
-            order.email,
-        )
+def _money(pence: int) -> str:
+    """Format pence as a £-prefixed string with two decimals."""
+    return f"£{(pence or 0) / 100:.2f}"
+
+
+# Subject lines and console-log labels per status, kept in one place so all
+# notifications stay consistent.
+_STATUS_EMAIL_META = {
+    "processing": {
+        "subject": "Your order is being prepared — {order_number}",
+        "console_icon": "⚙️ ",
+        "console_label": "Order Processing",
+    },
+    "shipped": {
+        "subject": "Your order is on the way — {order_number}",
+        "console_icon": "📦",
+        "console_label": "Order Shipped",
+    },
+    "delivered": {
+        "subject": "Your order has been delivered — {order_number}",
+        "console_icon": "✅",
+        "console_label": "Order Delivered",
+    },
+    "cancelled": {
+        "subject": "Your order has been cancelled — {order_number}",
+        "console_icon": "❌",
+        "console_label": "Order Cancelled",
+    },
+    "refunded": {
+        "subject": "Your refund has been issued — {order_number}",
+        "console_icon": "💸",
+        "console_label": "Order Refunded",
+    },
+}
+
+
+def _send_status_email(order, status_key: str, extra_context: dict | None = None) -> None:
+    """
+    Send a customer notification email for an order status change.
+
+    Renders `orders/emails/{status_key}.html` and `.txt` and sends via the
+    configured backend. In the console-backend dev environment, also emits a
+    structured log line so you can see at a glance what would have been sent.
+    """
+    meta = _STATUS_EMAIL_META.get(status_key)
+    if not meta:
+        logger.warning("No email meta defined for status %s", status_key)
         return
-    # SMTP path: render templates and send_mail (deferred for now)
 
+    site_name = "The Pet Headquarters"
+    site_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+    order_url = f"{site_url}/checkout/success?session_id={order.stripe_checkout_session_id}"
 
-def _send_cancelled_email(order, refunded=False):
+    context = {
+        "order": order,
+        "items": order.items.all(),
+        "site_name": site_name,
+        "order_url": order_url,
+        "tracking_url": order.tracking_link or order.tracking_url or "",
+        "carrier_label": order.get_tracking_carrier_display() if order.tracking_carrier else "",
+        "subtotal_display": _money(order.subtotal),
+        "shipping_display": "FREE" if order.shipping_cost == 0 else _money(order.shipping_cost),
+        "discount_display": _money(order.discount_amount) if order.discount_amount else "",
+        "total_display": _money(order.total),
+        "refund_display": _money(order.refund_amount) if order.refund_amount else "",
+    }
+    if extra_context:
+        context.update(extra_context)
+
+    subject = meta["subject"].format(order_number=order.order_number)
+
+    # Always emit a console summary so devs can see notifications fire even
+    # when the SMTP backend is configured.
+    logger.info(
+        "\n"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        "  %s %s — %s\n"
+        "  📬 To: %s\n"
+        "  💰 Total: %s\n"
+        "%s"
+        "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+        meta["console_icon"],
+        meta["console_label"],
+        order.order_number,
+        order.email,
+        context["total_display"],
+        f"  🔗 Tracking: {context['tracking_url']}\n" if context["tracking_url"] else "",
+    )
+
     if _is_console_email():
-        logger.info(
-            "\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "  ❌ Order %s — %s\n"
-            "  💰 Refund: %s\n"
-            "  📬 To: %s\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            order.order_number,
-            "Refunded" if refunded else "Cancelled",
-            f"£{order.refund_amount / 100:.2f}" if refunded else "N/A",
-            order.email,
-        )
+        return
 
+    try:
+        html_message = render_to_string(f"orders/emails/{status_key}.html", context)
+        plain_message = render_to_string(f"orders/emails/{status_key}.txt", context)
+    except Exception:
+        logger.exception("Failed to render %s email for %s", status_key, order.order_number)
+        return
 
-def _send_delivered_email(order):
-    if _is_console_email():
-        logger.info(
-            "\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "  ✅ Order Delivered — %s\n"
-            "  📬 To: %s\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            order.order_number,
-            order.email,
-        )
+    send_mail(
+        subject=subject,
+        message=plain_message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[order.email],
+        html_message=html_message,
+        fail_silently=True,
+    )
 
 
 @transaction.atomic
 def transition_status(order, new_status, user=None):
     """Generic status transition (used for non-shipping moves like processing/delivered)."""
+    previous_status = order.status
     order.status = new_status
 
     if new_status == Order.Status.DELIVERED and not order.delivered_at:
         order.delivered_at = timezone.now()
         order.save(update_fields=["status", "delivered_at"])
-        _send_delivered_email(order)
+        _send_status_email(order, "delivered")
     elif new_status == Order.Status.CANCELLED and not order.cancelled_at:
         order.cancelled_at = timezone.now()
         order.save(update_fields=["status", "cancelled_at"])
+        _send_status_email(order, "cancelled")
+    elif new_status == Order.Status.PROCESSING and previous_status != Order.Status.PROCESSING:
+        order.save(update_fields=["status"])
+        _send_status_email(order, "processing")
     else:
         order.save(update_fields=["status"])
 
@@ -124,7 +189,7 @@ def ship_order(order, carrier, tracking_number, tracking_url, user=None):
         fulfillment_status=OrderItem.FulfillmentStatus.SHIPPED,
     )
 
-    _send_shipped_email(order)
+    _send_status_email(order, "shipped")
     return order
 
 
@@ -136,7 +201,7 @@ def deliver_order(order, user=None):
     order.delivered_at = timezone.now()
     order.save(update_fields=["status", "delivered_at"])
     order.items.update(fulfillment_status=OrderItem.FulfillmentStatus.DELIVERED)
-    _send_delivered_email(order)
+    _send_status_email(order, "delivered")
     return order
 
 
@@ -171,7 +236,11 @@ def cancel_order(order, reason="", user=None):
                 user=user,
             )
 
-    _send_cancelled_email(order, refunded=False)
+    _send_status_email(
+        order,
+        "cancelled",
+        extra_context={"reason": reason, "refunded": False},
+    )
     return order
 
 
@@ -214,5 +283,5 @@ def refund_order(order, user=None):
             user=user,
         )
 
-    _send_cancelled_email(order, refunded=True)
+    _send_status_email(order, "refunded", extra_context={"refunded": True})
     return order

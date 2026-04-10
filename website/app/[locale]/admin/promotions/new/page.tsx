@@ -1,14 +1,12 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "@heroui/react";
 import { useCreatePromotion } from "@/hooks/use-admin-promotions";
 import { PromotionForm } from "../_components/promotion-form";
 
 export default function NewPromotionPage() {
   const router = useRouter();
-  const pathname = usePathname();
-  const locale = pathname.split("/")[1] || "en";
   const createMutation = useCreatePromotion();
 
   return (
@@ -20,12 +18,12 @@ export default function NewPromotionPage() {
       <PromotionForm
         submitting={createMutation.isPending}
         submitLabel="Create promotion"
-        onCancel={() => router.push(`/${locale}/admin/promotions`)}
+        onCancel={() => router.push("/admin/promotions")}
         onSubmit={async (data) => {
           try {
             const created = await createMutation.mutateAsync(data);
             toast.success("Promotion created");
-            router.push(`/${locale}/admin/promotions/${created.id}`);
+            router.push(`/admin/promotions/${created.id}`);
           } catch (err) {
             const message = err instanceof Error ? err.message : "Failed to create promotion";
             toast.danger(message);

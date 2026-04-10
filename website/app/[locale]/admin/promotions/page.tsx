@@ -172,7 +172,7 @@ export default function AdminPromotionsPage() {
                       {p.discount_type === "percent" ? `${p.discount_value}% off` : DISCOUNT_LABEL[p.discount_type]}
                     </p>
                     <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-xs)", color: "var(--white-faint)" }}>
-                      {p.times_used}
+                      {p.click_count} clicks · {p.times_used}
                       {p.max_uses_total ? ` / ${p.max_uses_total}` : ""} uses
                       {p.ends_at ? ` · ends ${formatDate(p.ends_at)}` : ""}
                     </p>

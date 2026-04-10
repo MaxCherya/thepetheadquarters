@@ -27,6 +27,7 @@ from apps.orders.services import (
     calculate_shipping,
     create_stripe_checkout_session,
     fulfill_order,
+    link_guest_orders_to_user,
     validate_cart,
 )
 
@@ -205,10 +206,7 @@ class OrderHistoryView(APIView):
     def get(self, request):
         # Retroactively link guest orders that share the same email
         # to this account (e.g. ordered as guest, then created an account).
-        Order.objects.filter(
-            user__isnull=True,
-            email__iexact=request.user.email,
-        ).update(user=request.user)
+        link_guest_orders_to_user(request.user)
 
         orders = (
             Order.objects

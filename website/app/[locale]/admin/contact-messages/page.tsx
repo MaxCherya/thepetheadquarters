@@ -26,6 +26,13 @@ function formatDateTime(s: string): string {
   });
 }
 
+function formatShortDate(s: string): string {
+  return new Date(s).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+  });
+}
+
 const contactKeys = {
   all: ["admin", "contact-messages"] as const,
   list: (qs: string) => [...contactKeys.all, "list", qs] as const,
@@ -150,44 +157,97 @@ export default function AdminContactMessagesPage() {
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg" style={{ background: "var(--bg-secondary)", border: "1px solid var(--bg-border)" }}>
-          {messages.map((m, i) => (
-            <button
-              key={m.id}
-              onClick={() => openDetail(m.id)}
-              className="flex w-full items-center justify-between text-left transition-colors duration-200 hover:bg-[rgba(187,148,41,0.05)]"
-              style={{
-                padding: "var(--space-4) var(--space-5)",
-                borderBottom: i < messages.length - 1 ? "1px solid var(--bg-border)" : "none",
-                background: m.is_read ? "transparent" : "rgba(187,148,41,0.04)",
-              }}
-            >
-              <div className="flex min-w-0 flex-1 items-center gap-3">
-                {m.is_read ? (
-                  <MailOpen size={16} style={{ color: "var(--white-faint)", flexShrink: 0 }} />
-                ) : (
-                  <Mail size={16} style={{ color: "var(--gold-dark)", flexShrink: 0 }} />
-                )}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate" style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", fontWeight: m.is_read ? "var(--weight-regular)" : "var(--weight-semibold)", color: "var(--white)" }}>
-                    {m.name} <span style={{ color: "var(--white-faint)" }}>· {m.email}</span>
-                  </p>
-                  <p className="truncate" style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-xs)", color: "var(--white-faint)" }}>
-                    {m.subject || "(no subject)"} — {m.message.slice(0, 80)}{m.message.length > 80 ? "…" : ""}
-                  </p>
+          {messages.map((m, i) => {
+            const unread = !m.is_read;
+            return (
+              <button
+                key={m.id}
+                onClick={() => openDetail(m.id)}
+                className="flex w-full items-center justify-between text-left transition-colors duration-200 hover:bg-[rgba(187,148,41,0.08)]"
+                style={{
+                  padding: "var(--space-4) var(--space-5)",
+                  borderBottom: i < messages.length - 1 ? "1px solid var(--bg-border)" : "none",
+                  background: unread ? "rgba(187,148,41,0.10)" : "transparent",
+                  borderLeft: unread ? "3px solid var(--gold)" : "3px solid transparent",
+                }}
+              >
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  {unread ? (
+                    <Mail size={16} style={{ color: "var(--gold)", flexShrink: 0 }} fill="var(--gold)" />
+                  ) : (
+                    <MailOpen size={16} style={{ color: "var(--white-faint)", flexShrink: 0 }} />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p
+                        className="truncate"
+                        style={{
+                          fontFamily: "var(--font-montserrat)",
+                          fontSize: "var(--text-sm)",
+                          fontWeight: unread ? "var(--weight-bold)" : "var(--weight-regular)",
+                          color: unread ? "var(--white)" : "var(--white-dim)",
+                        }}
+                      >
+                        {m.name}{" "}
+                        <span style={{ color: "var(--white-faint)", fontWeight: "var(--weight-regular)" }}>
+                          · {m.email}
+                        </span>
+                      </p>
+                      {unread && (
+                        <span
+                          className="rounded-full px-2"
+                          style={{
+                            background: "var(--gold)",
+                            color: "#FFFFFF",
+                            fontFamily: "var(--font-montserrat)",
+                            fontSize: "9px",
+                            fontWeight: 700,
+                            letterSpacing: "0.05em",
+                            textTransform: "uppercase",
+                            paddingTop: "2px",
+                            paddingBottom: "2px",
+                            flexShrink: 0,
+                          }}
+                        >
+                          New
+                        </span>
+                      )}
+                    </div>
+                    <p
+                      className="truncate"
+                      style={{
+                        fontFamily: "var(--font-montserrat)",
+                        fontSize: "var(--text-xs)",
+                        color: unread ? "var(--white-dim)" : "var(--white-faint)",
+                        marginTop: "2px",
+                      }}
+                    >
+                      {m.subject || "(no subject)"} — {m.message.slice(0, 80)}{m.message.length > 80 ? "…" : ""}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <span className="ml-3 shrink-0" style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-xs)", color: "var(--white-faint)" }}>
-                {formatDateTime(m.created_at)}
-              </span>
-            </button>
-          ))}
+                <span
+                  className="ml-3 shrink-0"
+                  style={{
+                    fontFamily: "var(--font-montserrat)",
+                    fontSize: "var(--text-xs)",
+                    color: unread ? "var(--gold-dark)" : "var(--white-faint)",
+                    fontWeight: unread ? "var(--weight-semibold)" : "var(--weight-regular)",
+                  }}
+                >
+                  <span className="sm:hidden">{formatShortDate(m.created_at)}</span>
+                  <span className="hidden sm:inline">{formatDateTime(m.created_at)}</span>
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
 
       {/* Detail modal */}
       {selectedId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }} onClick={() => setSelectedId(null)}>
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg" onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-secondary)", border: "1px solid var(--bg-border)", padding: "var(--space-6)", margin: "var(--space-4)" }}>
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" style={{ background: "rgba(0,0,0,0.5)" }} onClick={() => setSelectedId(null)}>
+          <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-lg sm:rounded-lg" onClick={(e) => e.stopPropagation()} style={{ background: "var(--bg-secondary)", border: "1px solid var(--bg-border)", padding: "var(--space-4)" }}>
             {detailQuery.isLoading || !selected ? (
               <div className="flex justify-center py-8">
                 <div className="h-6 w-6 animate-spin rounded-full" style={{ border: "2px solid var(--bg-border)", borderTopColor: "var(--gold)" }} />
@@ -236,10 +296,10 @@ export default function AdminContactMessagesPage() {
                   {selected.message}
                 </div>
 
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
                   <a
                     href={`mailto:${selected.email}?subject=Re: ${encodeURIComponent(selected.subject || "your message")}&body=${encodeURIComponent(`\n\n---\nOn ${formatDateTime(selected.created_at)}, ${selected.name} wrote:\n${selected.message.split("\n").map((l) => "> " + l).join("\n")}`)}`}
-                    className="flex items-center gap-2 rounded-md px-4 py-2"
+                    className="flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 sm:w-auto"
                     style={{ background: "var(--gold)", color: "#FFFFFF", fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", fontWeight: "var(--weight-semibold)" }}
                   >
                     <ExternalLink size={14} />
@@ -248,7 +308,12 @@ export default function AdminContactMessagesPage() {
                   <button
                     onClick={() => updateMutation.mutate({ id: selected.id, is_read: !selected.is_read })}
                     disabled={updateMutation.isPending}
-                    className="flex items-center gap-2 rounded-md px-4 py-2 disabled:opacity-50"
+                    title={
+                      selected.is_read
+                        ? "Flag this back as unread so it stays in your unread counter — useful when you want to come back to it later."
+                        : "Mark as already-read so it stops showing in the unread counter."
+                    }
+                    className="flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 disabled:opacity-50 sm:w-auto"
                     style={{ border: "1px solid var(--bg-border)", color: "var(--white-dim)", fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)" }}
                   >
                     {selected.is_read ? <Mail size={14} /> : <MailOpen size={14} />}
@@ -256,7 +321,7 @@ export default function AdminContactMessagesPage() {
                   </button>
                   <button
                     onClick={() => setDeleting(selected)}
-                    className="flex items-center gap-2 rounded-md px-4 py-2"
+                    className="flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 sm:w-auto"
                     style={{ border: "1px solid rgba(198,40,40,0.4)", color: "var(--error)", fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)" }}
                   >
                     <Trash2 size={14} />

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ProductAttribute } from "@/hooks/attributes.server";
 import { ProductSpecs } from "./product-specs";
+import { ReviewsTab } from "./reviews-tab";
 
 interface ProductTabsProps {
   description: string;
@@ -13,9 +14,10 @@ interface ProductTabsProps {
     reviews: string;
   };
   reviewCount: number;
+  slug: string;
 }
 
-export function ProductTabs({ description, attributes, dict, reviewCount }: ProductTabsProps) {
+export function ProductTabs({ description, attributes, dict, reviewCount, slug }: ProductTabsProps) {
   const tabs = [
     { key: "description", label: dict.description },
     ...(attributes.length > 0
@@ -71,17 +73,7 @@ export function ProductTabs({ description, attributes, dict, reviewCount }: Prod
           <ProductSpecs attributes={attributes} title={dict.specifications} />
         )}
 
-        {activeTab === "reviews" && (
-          <p
-            style={{
-              fontFamily: "var(--font-montserrat)",
-              fontSize: "var(--text-sm)",
-              color: "var(--white-faint)",
-            }}
-          >
-            Reviews coming soon.
-          </p>
-        )}
+        {activeTab === "reviews" && <ReviewsTab slug={slug} />}
       </div>
     </div>
   );

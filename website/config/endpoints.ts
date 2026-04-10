@@ -50,6 +50,15 @@ export const endpoints = {
   },
   promotions: {
     validate: `${API_BASE}/promotions/validate/`,
+    trackClick: `${API_BASE}/promotions/track-click/`,
+  },
+  reviews: {
+    list: (slug: string) => `${API_BASE}/products/${slug}/reviews/`,
+    stats: (slug: string) => `${API_BASE}/products/${slug}/reviews/stats/`,
+    eligibility: (slug: string) => `${API_BASE}/products/${slug}/reviews/eligibility/`,
+    detail: (slug: string, id: string) => `${API_BASE}/products/${slug}/reviews/${id}/`,
+    helpful: (slug: string, id: string) => `${API_BASE}/products/${slug}/reviews/${id}/helpful/`,
+    mine: `${API_BASE}/me/reviews/`,
   },
   admin: {
     dashboard: `${API_BASE}/admin/dashboard/`,
@@ -126,6 +135,10 @@ export const endpoints = {
     contactMessages: {
       list: `${API_BASE}/admin/contact-messages/`,
       detail: (id: string) => `${API_BASE}/admin/contact-messages/${id}/`,
+    },
+    reviews: {
+      list: `${API_BASE}/admin/reviews/`,
+      detail: (id: string) => `${API_BASE}/admin/reviews/${id}/`,
     },
     promotions: {
       list: `${API_BASE}/admin/promotions/`,

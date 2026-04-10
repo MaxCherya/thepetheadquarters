@@ -45,6 +45,7 @@ LOCAL_APPS = [
     "apps.suppliers",
     "apps.procurement",
     "apps.promotions",
+    "apps.reviews",
     "apps.audit",
     "apps.admin_panel",
 ]

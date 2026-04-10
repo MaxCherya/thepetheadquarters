@@ -1,0 +1,17 @@
+Your order has been cancelled — {{ order.order_number }}
+
+Hi,
+
+Your order has been cancelled.
+{% if reason %}
+Reason: {{ reason }}
+{% endif %}
+If a payment was taken for this order, the refund will appear on your
+statement within a few business days.
+
+Order: {{ order.order_number }}
+Total: {{ total_display }}
+
+View your order: {{ order_url }}
+
+— {{ site_name }}

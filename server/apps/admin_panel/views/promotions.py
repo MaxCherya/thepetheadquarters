@@ -36,6 +36,7 @@ class AdminPromotionListSerializer(serializers.ModelSerializer):
             "max_uses_total",
             "max_uses_per_user",
             "times_used",
+            "click_count",
             "is_active",
             "source",
             "campaign_label",
@@ -70,6 +71,7 @@ class AdminPromotionDetailSerializer(serializers.ModelSerializer):
             "max_uses_total",
             "max_uses_per_user",
             "times_used",
+            "click_count",
             "is_active",
             "source",
             "campaign_label",
@@ -93,10 +95,16 @@ class AdminPromotionDetailSerializer(serializers.ModelSerializer):
             total_revenue=Sum("order__total"),
             count=Count("id"),
         )
+        redemption_count = agg["count"] or 0
+        clicks = obj.click_count or 0
         return {
-            "redemption_count": agg["count"] or 0,
+            "redemption_count": redemption_count,
             "total_discount_pence": agg["total_discount"] or 0,
             "total_revenue_pence": agg["total_revenue"] or 0,
+            "click_count": clicks,
+            "conversion_rate": (
+                round((redemption_count / clicks) * 100, 1) if clicks > 0 else None
+            ),
         }
 
 

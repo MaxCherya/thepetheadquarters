@@ -25,6 +25,7 @@ from apps.orders.services import CartValidationError, calculate_shipping, valida
 from apps.promotions.services import (
     PromotionError,
     build_cart_lines_from_validated_items,
+    track_click,
     validate_code,
 )
 
@@ -91,3 +92,31 @@ class ValidatePromoCodeView(APIView):
             "discount_amount": result.discount_amount,
             "applies_to_shipping": result.applies_to_shipping,
         })
+
+
+class TrackPromoClickSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=64)
+
+
+class TrackPromoClickView(APIView):
+    """
+    Fire-and-forget endpoint that increments a promotion's click counter.
+    Called by the cart context whenever it auto-applies a `?promo=CODE` URL,
+    so admins can see how many people followed an influencer link even if
+    they never completed a checkout. Always returns 204 to avoid leaking
+    whether a code exists.
+    """
+
+    permission_classes = [AllowAny]
+    throttle_classes = [PromoValidateThrottle]
+
+    def post(self, request):
+        serializer = TrackPromoClickSerializer(data=request.data)
+        if not serializer.is_valid():
+            from rest_framework.response import Response
+            return Response(status=204)
+
+        track_click(serializer.validated_data["code"])
+
+        from rest_framework.response import Response
+        return Response(status=204)

@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from django.db import IntegrityError, transaction
-from django.db.models import F
+from django.db.models import F  # noqa: F401  (used by track_click via update())
 from django.utils import timezone
 
 from apps.promotions.models import Promotion, PromotionRedemption
@@ -235,6 +235,23 @@ def redeem(*, promotion_id, order, user, guest_email: str, discount_amount: int,
 # ---------------------------------------------------------------------------
 # Code generation helpers (used by newsletter flow + admin "generate" button)
 # ---------------------------------------------------------------------------
+def track_click(code: str) -> bool:
+    """
+    Atomically bump the click counter for a promotion.
+
+    Used to record how many times a `?promo=CODE` link was opened in a
+    browser, even if the visitor never completes a checkout. Returns True
+    if a known code was incremented, False otherwise.
+    """
+    normalised = _normalise_code(code)
+    if not normalised:
+        return False
+    updated = Promotion.objects.filter(code__iexact=normalised).update(
+        click_count=F("click_count") + 1,
+    )
+    return updated > 0
+
+
 def build_cart_lines_from_validated_items(validated_items: list[dict]) -> list[CartLine]:
     """
     Convert the output of `apps.orders.services.validate_cart` into the

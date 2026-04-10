@@ -1,0 +1,13 @@
+Your order is being prepared — {{ order.order_number }}
+
+Hi,
+
+Good news — we've started preparing your order for dispatch. We'll let
+you know as soon as it's on its way.
+
+Order: {{ order.order_number }}
+Total: {{ total_display }}
+
+View your order: {{ order_url }}
+
+— {{ site_name }}

@@ -1,0 +1,21 @@
+{% extends "orders/emails/_base.html" %}
+
+{% block headline %}Your order is on the way{% endblock %}
+
+{% block intro %}
+<p style="font-size:15px;line-height:1.6;color:#2D2D2D;margin-top:0;">
+  Your order has been dispatched and is on its way to you.
+</p>
+{% endblock %}
+
+{% block extra %}
+{% if tracking_url %}
+<div style="margin:0 0 24px;padding:16px;background:#F4F1EA;border-radius:4px;">
+  <p style="margin:0 0 4px;font-size:12px;color:#555555;text-transform:uppercase;letter-spacing:0.05em;">Tracking</p>
+  {% if carrier_label %}<p style="margin:0;font-size:14px;color:#111111;">{{ carrier_label }}{% if order.tracking_number %} · {{ order.tracking_number }}{% endif %}</p>{% endif %}
+  <p style="margin:8px 0 0;"><a href="{{ tracking_url }}" style="font-size:13px;color:#C6A030;text-decoration:none;">Track your parcel →</a></p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block cta %}{% if tracking_url %}Track Order{% else %}View Order{% endif %}{% endblock %}

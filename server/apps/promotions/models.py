@@ -115,6 +115,13 @@ class Promotion(BaseModel):
         default=0,
         help_text="Cached counter — incremented atomically on redemption.",
     )
+    click_count = models.PositiveIntegerField(
+        default=0,
+        help_text=(
+            "Cached counter — incremented when the apply URL "
+            "(?promo=CODE) is opened in a browser."
+        ),
+    )
     is_active = models.BooleanField(default=True, db_index=True)
 
     # Attribution

@@ -118,6 +118,29 @@ def calculate_shipping(subtotal_pence):
     return flat_rate
 
 
+def link_guest_orders_to_user(user) -> int:
+    """
+    Attach any guest orders that share this user's email to their account.
+
+    Customers often check out as guests first, then create an account later
+    with the same email. We need their guest orders to "follow" them so order
+    history, review eligibility, and any other per-user lookups recognise the
+    purchases. Returns the number of orders that were linked.
+
+    Safe to call from anywhere — idempotent, only touches rows where
+    `user IS NULL` and the email matches case-insensitively.
+    """
+    from apps.orders.models import Order
+
+    if not user or not getattr(user, "is_authenticated", False) or not user.email:
+        return 0
+
+    return Order.objects.filter(
+        user__isnull=True,
+        email__iexact=user.email,
+    ).update(user=user)
+
+
 def create_stripe_checkout_session(
     validated_items,
     shipping_address,
