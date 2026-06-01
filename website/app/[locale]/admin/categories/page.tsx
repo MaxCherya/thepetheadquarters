@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { Plus, FolderTree, Pencil, Trash2, ChevronRight, ChevronDown, Folder, FolderOpen } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { Plus, FolderTree, Pencil, Trash2, ChevronRight, ChevronDown, Folder, FolderOpen, Upload, X } from "lucide-react";
 import { toast } from "@heroui/react";
 import {
   useAdminCategories,
@@ -10,6 +10,7 @@ import {
   useUpdateCategory,
   type AdminCategory,
 } from "@/hooks/use-admin-catalog";
+import { endpoints } from "@/config/endpoints";
 import { ConfirmModal } from "../_components/confirm-modal";
 
 interface TreeNode {
@@ -49,9 +50,44 @@ export default function AdminCategoriesPage() {
   const deleteMutation = useDeleteCategory();
 
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: "", description: "", parent_id: "", sort_order: 0 });
+  const [formData, setFormData] = useState({ name: "", description: "", image: "", parent_id: "", sort_order: 0 });
   const [deleting, setDeleting] = useState<AdminCategory | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (!file) return;
+    setUploading(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("folder", "categories");
+      const res = await fetch(endpoints.admin.upload.image, {
+        method: "POST",
+        credentials: "include",
+        body,
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.danger(json.code || "Upload failed");
+        return;
+      }
+      const url = json.data?.url;
+      if (!url) {
+        toast.danger("No URL in response");
+        return;
+      }
+      setFormData((d) => ({ ...d, image: url }));
+      toast.success("Image uploaded");
+    } catch {
+      toast.danger("Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   const tree = useMemo(() => buildTree(categories), [categories]);
 
@@ -84,13 +120,13 @@ export default function AdminCategoriesPage() {
 
   function startCreate() {
     setEditing(null);
-    setFormData({ name: "", description: "", parent_id: "", sort_order: categories.length });
+    setFormData({ name: "", description: "", image: "", parent_id: "", sort_order: categories.length });
     setShowForm(true);
   }
 
   function startEdit(cat: AdminCategory) {
     setEditing(cat);
-    setFormData({ name: cat.name, description: cat.description, parent_id: cat.parent || "", sort_order: cat.sort_order });
+    setFormData({ name: cat.name, description: cat.description, image: cat.image || "", parent_id: cat.parent || "", sort_order: cat.sort_order });
     setShowForm(true);
   }
 
@@ -148,7 +184,65 @@ export default function AdminCategoriesPage() {
               </select>
             </div>
             <div><label style={labelStyle}>Sort Order</label><input type="number" value={formData.sort_order} onChange={(e) => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })} style={inputStyle} /></div>
-            <div className="md:col-span-2"><label style={labelStyle}>Description</label><textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} style={inputStyle} /></div>
+            <div className="md:col-span-2">
+              <label style={labelStyle}>Image</label>
+              <div className="flex items-start gap-3">
+                {formData.image ? (
+                  <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md" style={{ border: "1px solid var(--bg-border)", background: "var(--bg-tertiary)" }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={formData.image}
+                      alt="Category preview"
+                      className="h-full w-full object-cover"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0.3"; }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, image: "" })}
+                      className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full"
+                      style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}
+                      aria-label="Remove image"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md" style={{ background: "var(--bg-tertiary)", border: "1px dashed var(--bg-border)", color: "var(--white-faint)" }}>
+                    <FolderTree size={20} />
+                  </div>
+                )}
+                <div className="flex-1 space-y-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
+                    className="flex items-center gap-2 rounded-md px-4 py-2 disabled:opacity-50"
+                    style={{ border: "1px solid var(--bg-border)", color: "var(--gold-dark)", fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", fontWeight: "var(--weight-medium)" }}
+                  >
+                    <Upload size={13} />
+                    {uploading ? "Uploading…" : formData.image ? "Replace image" : "Upload image"}
+                  </button>
+                  <input
+                    type="url"
+                    placeholder="…or paste an image URL"
+                    value={formData.image}
+                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                    style={{ ...inputStyle, fontSize: "var(--text-xs)" }}
+                  />
+                  <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "11px", color: "var(--white-faint)" }}>
+                    JPEG/PNG/WebP/GIF · max 8 MB. Uploads go to Cloudinary; square images render best on the /categories grid.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="md:col-span-2"><label style={labelStyle}>Description</label><textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} rows={3} style={inputStyle} placeholder="Short blurb shown to customers on the /categories grid and at the top of the category page." /></div>
           </div>
           <div className="mt-6 flex gap-3">
             <button onClick={handleSave} className="rounded-md px-5 py-2.5" style={{ background: "var(--gold)", color: "#FFFFFF", fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", fontWeight: 600 }}>Save</button>

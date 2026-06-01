@@ -81,6 +81,7 @@ export interface AdminCategory {
   slug: string;
   name: string;
   description: string;
+  image: string;
   parent: string | null;
   depth: number;
   sort_order: number;
@@ -114,6 +115,7 @@ export function useAdminCategories() {
 interface CategoryFormData {
   name: string;
   description: string;
+  image: string;
   parent_id: string | null;
   sort_order: number;
 }

@@ -11,10 +11,11 @@ class CategoryTranslationSerializer(serializers.ModelSerializer):
 
 class CategoryListSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField()
 
     class Meta:
         model = Category
-        fields = ["id", "slug", "name", "image", "depth", "parent"]
+        fields = ["id", "slug", "name", "description", "image", "depth", "parent"]
 
     def get_name(self, obj) -> str:
         lang = self.context.get("language", "en")
@@ -22,6 +23,13 @@ class CategoryListSerializer(serializers.ModelSerializer):
         if not translation:
             translation = obj.translations.filter(language="en").first()
         return translation.name if translation else ""
+
+    def get_description(self, obj) -> str:
+        lang = self.context.get("language", "en")
+        translation = obj.translations.filter(language=lang).first()
+        if not translation:
+            translation = obj.translations.filter(language="en").first()
+        return translation.description if translation else ""
 
 
 class CategoryDetailSerializer(CategoryListSerializer):

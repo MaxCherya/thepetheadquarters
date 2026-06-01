@@ -2,6 +2,7 @@ export interface Category {
   id: string;
   slug: string;
   name: string;
+  description: string;
   image: string;
   depth: number;
   parent: string | null;
@@ -9,7 +10,6 @@ export interface Category {
 
 export interface CategoryDetail extends Category {
   path: string;
-  description: string;
   meta_title: string;
   meta_description: string;
   translations: CategoryTranslation[];

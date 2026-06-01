@@ -14,10 +14,10 @@
  * storefront PDP, so editing here cascades.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload, X } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@heroui/react";
 import { apiClient, ApiError } from "@/lib/api-client";
@@ -50,6 +50,45 @@ export default function AdminCategoryEditPage() {
   const [guideText, setGuideText] = useState("");
   const [guideImageUrl, setGuideImageUrl] = useState("");
   const [hydrated, setHydrated] = useState(false);
+  const [uploadingHero, setUploadingHero] = useState(false);
+  const [uploadingGuide, setUploadingGuide] = useState(false);
+  const heroFileRef = useRef<HTMLInputElement>(null);
+  const guideFileRef = useRef<HTMLInputElement>(null);
+
+  async function uploadTo(
+    file: File,
+    folder: string,
+    setBusy: (b: boolean) => void,
+    setUrl: (u: string) => void,
+  ) {
+    setBusy(true);
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      body.append("folder", folder);
+      const res = await fetch(endpoints.admin.upload.image, {
+        method: "POST",
+        credentials: "include",
+        body,
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        toast.danger(json.code || "Upload failed");
+        return;
+      }
+      const url = json.data?.url;
+      if (!url) {
+        toast.danger("No URL in response");
+        return;
+      }
+      setUrl(url);
+      toast.success("Image uploaded");
+    } catch {
+      toast.danger("Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   useEffect(() => {
     if (!category || hydrated) return;
@@ -138,12 +177,13 @@ export default function AdminCategoryEditPage() {
             style={{ ...inputStyle, resize: "vertical" }}
           />
         </Field>
-        <Field label="Hero image URL (used on the storefront category page)">
-          <input
+        <Field label="Hero image (shown on the /categories grid card)">
+          <ImageUploader
             value={image}
-            onChange={(e) => setImage(e.target.value)}
-            placeholder="https://…"
-            style={inputStyle}
+            onChange={setImage}
+            uploading={uploadingHero}
+            inputRef={heroFileRef}
+            onFile={(f) => uploadTo(f, "categories", setUploadingHero, setImage)}
           />
         </Field>
       </Section>
@@ -169,12 +209,14 @@ export default function AdminCategoryEditPage() {
             style={{ ...inputStyle, resize: "vertical", fontFamily: "var(--font-montserrat)" }}
           />
         </Field>
-        <Field label="Diagram image URL (optional)">
-          <input
+        <Field label="Diagram image (optional)">
+          <ImageUploader
             value={guideImageUrl}
-            onChange={(e) => setGuideImageUrl(e.target.value)}
-            placeholder="https://… (e.g. labelled measuring diagram)"
-            style={inputStyle}
+            onChange={setGuideImageUrl}
+            uploading={uploadingGuide}
+            inputRef={guideFileRef}
+            onFile={(f) => uploadTo(f, "categories", setUploadingGuide, setGuideImageUrl)}
+            placeholder="…or paste URL of a labelled measuring diagram"
           />
         </Field>
 
@@ -306,6 +348,82 @@ function Section({
         </p>
       )}
       <div className="flex flex-col gap-4">{children}</div>
+    </div>
+  );
+}
+
+function ImageUploader({
+  value,
+  onChange,
+  uploading,
+  inputRef,
+  onFile,
+  placeholder = "…or paste an image URL",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  uploading: boolean;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onFile: (file: File) => void;
+  placeholder?: string;
+}) {
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (inputRef.current) inputRef.current.value = "";
+    if (file) onFile(file);
+  }
+  return (
+    <div className="flex items-start gap-3">
+      {value ? (
+        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md" style={{ border: "1px solid var(--bg-border)", background: "var(--bg-tertiary)" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={value}
+            alt="Preview"
+            className="h-full w-full object-cover"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0.3"; }}
+          />
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full"
+            style={{ background: "rgba(0,0,0,0.6)", color: "#fff" }}
+            aria-label="Remove image"
+          >
+            <X size={11} />
+          </button>
+        </div>
+      ) : (
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-md" style={{ background: "var(--bg-tertiary)", border: "1px dashed var(--bg-border)", color: "var(--white-faint)" }}>
+          <Upload size={18} />
+        </div>
+      )}
+      <div className="flex flex-1 flex-col gap-2">
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          onChange={handleFile}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="flex w-fit items-center gap-2 rounded-md px-4 py-2 disabled:opacity-50"
+          style={{ border: "1px solid var(--bg-border)", color: "var(--gold-dark)", fontFamily: "var(--font-montserrat)", fontSize: 12, fontWeight: 500 }}
+        >
+          <Upload size={13} />
+          {uploading ? "Uploading…" : value ? "Replace image" : "Upload image"}
+        </button>
+        <input
+          type="url"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          style={{ ...inputStyle, fontSize: 11 }}
+        />
+      </div>
     </div>
   );
 }

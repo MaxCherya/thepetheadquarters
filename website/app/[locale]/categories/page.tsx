@@ -91,6 +91,19 @@ export default async function CategoriesPage({
                   >
                     {category.name}
                   </h2>
+                  {category.description && (
+                    <p
+                      className="mt-2 line-clamp-2"
+                      style={{
+                        fontFamily: "var(--font-montserrat)",
+                        fontSize: "var(--text-xs)",
+                        color: "var(--white-faint)",
+                        lineHeight: "var(--leading-relaxed)",
+                      }}
+                    >
+                      {category.description}
+                    </p>
+                  )}
                 </div>
               </Link>
             ))}
