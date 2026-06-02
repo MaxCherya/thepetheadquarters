@@ -14,6 +14,7 @@ class InventoryItemSerializer(serializers.ModelSerializer):
     product_name = serializers.SerializerMethodField()
     product_id = serializers.SerializerMethodField()
     primary_image = serializers.SerializerMethodField()
+    fulfillment_type = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductVariant
@@ -26,6 +27,7 @@ class InventoryItemSerializer(serializers.ModelSerializer):
             "price",
             "stock_quantity",
             "is_active",
+            "fulfillment_type",
         ]
 
     def get_product_name(self, obj):
@@ -38,6 +40,9 @@ class InventoryItemSerializer(serializers.ModelSerializer):
     def get_primary_image(self, obj):
         img = obj.product.images.filter(is_primary=True).first()
         return img.url if img else ""
+
+    def get_fulfillment_type(self, obj):
+        return obj.product.fulfillment_type
 
 
 class StockMovementSerializer(serializers.ModelSerializer):
@@ -72,6 +77,19 @@ class AdminInventoryListView(AdminBaseView):
 
     def get(self, request):
         qs = ProductVariant.objects.select_related("product").filter(is_active=True)
+
+        # Inventory tracking is for stock you actually hold. Dropship
+        # variants never accrue stock locally (supplier ships per order),
+        # so showing them in the default view just creates a permanent
+        # "0 / out of stock" noise floor. Hide them unless the admin
+        # explicitly asks for them with ?fulfillment_type=dropship
+        # or ?fulfillment_type=all.
+        fulfillment_param = request.query_params.get("fulfillment_type", "self")
+        if fulfillment_param == "self":
+            qs = qs.filter(product__fulfillment_type="self")
+        elif fulfillment_param == "dropship":
+            qs = qs.filter(product__fulfillment_type="dropship")
+        # "all" → no fulfillment filter
 
         level = request.query_params.get("level")
         if level == "out":

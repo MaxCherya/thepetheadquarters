@@ -4,6 +4,12 @@ export interface Product {
   name: string;
   short_description: string;
   brand_id: string | null;
+  /**
+   * "self" = we hold inventory locally; "dropship" = supplier ships per
+   * order and stock_quantity is meaningless. The storefront uses this
+   * to skip stock checks (always-available) on dropship variants.
+   */
+  fulfillment_type: "self" | "dropship";
   is_featured: boolean;
   average_rating: number;
   review_count: number;

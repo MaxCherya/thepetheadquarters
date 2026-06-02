@@ -260,6 +260,64 @@ export function OrderDetailView({ dict, orderNumber }: OrderDetailViewProps) {
                   </p>
                 )}
 
+                {/* Self-fulfilled items: show the preferred supplier as a
+                    quiet reference — handy for the "where do I reorder
+                    this from" lookup the admin does when stock runs
+                    low. No action button (the per-order forward flow
+                    is dropship-only); just a deep link to the supplier
+                    listing they saved on the product. */}
+                {item.fulfillment_type !== "dropship" && item.available_suppliers.length > 0 && (() => {
+                  const preferred = item.available_suppliers[0]; // backend sorts preferred first
+                  return (
+                    <div
+                      className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md p-2.5"
+                      style={{
+                        background: "var(--bg-tertiary)",
+                        border: "1px solid var(--bg-border)",
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontFamily: "var(--font-montserrat)",
+                          fontSize: 11,
+                          color: "var(--white-dim)",
+                        }}
+                      >
+                        Sourced from{" "}
+                        <strong style={{ color: "var(--white)" }}>
+                          {preferred.supplier_name}
+                        </strong>
+                        {preferred.supplier_sku && (
+                          <> · SKU {preferred.supplier_sku}</>
+                        )}
+                        {preferred.last_cost_pence > 0 && (
+                          <> · last cost <strong style={{ color: "var(--gold-dark)" }}>{formatPrice(preferred.last_cost_pence)}</strong></>
+                        )}
+                      </span>
+                      {preferred.supplier_url && (
+                        <a
+                          href={preferred.supplier_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 rounded-md px-2 py-0.5"
+                          style={{
+                            background: "rgba(187,148,41,0.10)",
+                            border: "1px solid rgba(187,148,41,0.25)",
+                            color: "var(--gold-dark)",
+                            fontFamily: "var(--font-montserrat)",
+                            fontSize: 10,
+                            letterSpacing: "var(--tracking-wide)",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          Open listing
+                          <ExternalLink size={9} />
+                        </a>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Dropship workflow surface — three states:
                     1. Not yet forwarded → "Forward to supplier" button +
                        quick "Open saved supplier" link if one exists,
@@ -269,7 +327,8 @@ export function OrderDetailView({ dict, orderNumber }: OrderDetailViewProps) {
                        supplier name, cost, SKU and a clickable URL
                        so they can revisit the listing for support /
                        reorder.
-                    3. Item is self-fulfilled → render nothing here. */}
+                    3. Item is self-fulfilled → handled by the panel
+                       above. */}
                 {item.fulfillment_type === "dropship" && (
                   <>
                     {item.assigned_supplier ? (

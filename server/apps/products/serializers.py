@@ -64,7 +64,7 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     option_values = OptionValueSerializer(many=True, read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
     is_on_sale = serializers.BooleanField(read_only=True)
-    in_stock = serializers.BooleanField(read_only=True)
+    in_stock = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductVariant
@@ -82,6 +82,14 @@ class ProductVariantSerializer(serializers.ModelSerializer):
             "option_values",
             "images",
         ]
+
+    def get_in_stock(self, obj) -> bool:
+        # Dropship variants are always considered available — the supplier
+        # ships per-order and we never hold inventory. stock_quantity stays
+        # at 0 for these and is meaningless as an availability signal.
+        if obj.product.fulfillment_type == Product.FulfillmentType.DROPSHIP:
+            return True
+        return obj.stock_quantity > 0
 
 
 class ProductTranslationSerializer(serializers.ModelSerializer):
@@ -112,6 +120,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "name",
             "short_description",
             "brand_id",
+            "fulfillment_type",
             "is_featured",
             "average_rating",
             "review_count",
@@ -172,6 +181,12 @@ class ProductListSerializer(serializers.ModelSerializer):
         return cheapest.compare_at_price
 
     def get_in_stock(self, obj) -> bool:
+        # Dropship products never hold stock locally — treat them as
+        # available as long as they have at least one active variant.
+        # `stock_quantity` is meaningless for dropship, so checking it
+        # would always render them out-of-stock.
+        if obj.fulfillment_type == Product.FulfillmentType.DROPSHIP:
+            return obj.variants.filter(is_active=True).exists()
         return obj.variants.filter(is_active=True, stock_quantity__gt=0).exists()
 
 
@@ -224,6 +239,7 @@ class ProductDetailSerializer(ProductListSerializer):
             "short_description",
             "brand_id",
             "brand",
+            "fulfillment_type",
             "is_featured",
             "average_rating",
             "review_count",

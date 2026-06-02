@@ -162,12 +162,19 @@ export function ProductInfo({ product, dict, customizationFields, onVariantChang
     setQuantity(1);
   }
 
+  // Dropship variants are always available — the supplier ships per
+  // order and we never hold local inventory. Skip the stock_quantity
+  // heuristic entirely (it stays at 0 forever for these) and treat
+  // them as "in stock" so the low-stock urgency banner never fires.
+  const isDropship = product.fulfillment_type === "dropship";
   const stockStatus = selectedVariant
-    ? selectedVariant.stock_quantity === 0
-      ? "out"
-      : selectedVariant.stock_quantity <= 5
-        ? "low"
-        : "in"
+    ? isDropship
+      ? "in"
+      : selectedVariant.stock_quantity === 0
+        ? "out"
+        : selectedVariant.stock_quantity <= 5
+          ? "low"
+          : "in"
     : null;
 
   const addToCartDisabled =

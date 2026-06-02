@@ -72,7 +72,14 @@ def validate_cart(items):
             errors.append({"variant_id": vid, "code": "checkout.product_unavailable"})
             continue
 
-        if variant.stock_quantity < quantity:
+        # Dropship variants don't carry local inventory — the supplier
+        # ships per order, so stock_quantity is meaningless and would
+        # always fail this check. Skip the gate for them; everything
+        # else (active flag, customizations, pricing) still applies.
+        if (
+            variant.product.fulfillment_type != Product.FulfillmentType.DROPSHIP
+            and variant.stock_quantity < quantity
+        ):
             errors.append({
                 "variant_id": vid,
                 "code": "checkout.insufficient_stock",

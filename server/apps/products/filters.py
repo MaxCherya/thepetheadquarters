@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django_filters import rest_framework as filters
 
 from .models import Product
@@ -23,8 +24,14 @@ class ProductFilter(filters.FilterSet):
         fields = []
 
     def filter_in_stock(self, queryset, name, value):
+        # Dropship products are always treated as in-stock when they
+        # have at least one active variant — the supplier ships per
+        # order, so local stock_quantity is meaningless for them.
         if value:
-            return queryset.filter(variants__stock_quantity__gt=0, variants__is_active=True)
+            return queryset.filter(
+                Q(fulfillment_type="dropship", variants__is_active=True)
+                | Q(variants__stock_quantity__gt=0, variants__is_active=True)
+            ).distinct()
         return queryset
 
     def filter_search(self, queryset, name, value):

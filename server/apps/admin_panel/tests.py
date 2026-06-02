@@ -816,3 +816,71 @@ class TeamDemoteTests(TestCase):
         self.assertEqual(res.status_code, 403)
         self.staff.refresh_from_db()
         self.assertTrue(self.staff.is_staff)
+
+
+@THROTTLE_OVERRIDE
+class InventoryDropshipFilterTests(TestCase):
+    """
+    Inventory page hides dropship variants by default — they never
+    accrue local stock, so showing them turns the page into a wall
+    of permanent zeroes. Admins can still opt in with
+    ?fulfillment_type=dropship or ?fulfillment_type=all.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        from apps.products.models import Product, ProductTranslation, ProductVariant
+
+        cls.inv_mgr = _make_staff("inv-drop@test.local", ROLE_INVENTORY_MANAGER)
+
+        cls.self_product = Product.objects.create(fulfillment_type="self")
+        ProductTranslation.objects.create(
+            product=cls.self_product, language="en", name="Self Product",
+            description="", short_description="",
+        )
+        cls.self_product.slug = None
+        cls.self_product.save()
+        cls.self_variant = ProductVariant.objects.create(
+            product=cls.self_product, sku="SELF-INV-1", price=1000, stock_quantity=5,
+        )
+
+        cls.drop_product = Product.objects.create(fulfillment_type="dropship")
+        ProductTranslation.objects.create(
+            product=cls.drop_product, language="en", name="Drop Product",
+            description="", short_description="",
+        )
+        cls.drop_product.slug = None
+        cls.drop_product.save()
+        cls.drop_variant = ProductVariant.objects.create(
+            product=cls.drop_product, sku="DROP-INV-1", price=1000, stock_quantity=0,
+        )
+
+    def setUp(self):
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.inv_mgr)
+
+    def _ids(self, res):
+        # AdminPagination uses DRF's default paginated shape — results
+        # at the top level, not under a "data" wrapper.
+        return {row["id"] for row in res.json()["results"]}
+
+    def test_default_excludes_dropship(self):
+        res = self.client.get("/api/v1/admin/inventory/")
+        self.assertEqual(res.status_code, 200)
+        ids = self._ids(res)
+        self.assertIn(str(self.self_variant.id), ids)
+        self.assertNotIn(str(self.drop_variant.id), ids)
+
+    def test_explicit_dropship_filter_returns_dropship_only(self):
+        res = self.client.get("/api/v1/admin/inventory/?fulfillment_type=dropship")
+        self.assertEqual(res.status_code, 200)
+        ids = self._ids(res)
+        self.assertIn(str(self.drop_variant.id), ids)
+        self.assertNotIn(str(self.self_variant.id), ids)
+
+    def test_all_filter_returns_both(self):
+        res = self.client.get("/api/v1/admin/inventory/?fulfillment_type=all")
+        self.assertEqual(res.status_code, 200)
+        ids = self._ids(res)
+        self.assertIn(str(self.self_variant.id), ids)
+        self.assertIn(str(self.drop_variant.id), ids)
