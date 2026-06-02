@@ -219,6 +219,14 @@ class ProductVariant(BaseModel, ActivatableMixin):
         help_text="Internal cost for margin tracking, in pence",
     )
     stock_quantity = models.PositiveIntegerField(default=0)
+    # Admin override that forces the variant out of stock regardless of
+    # stock_quantity or fulfillment_type. The expected use case is a
+    # dropship variant whose supplier has temporarily run out — we still
+    # want the variant visible on the PDP (so the swatch shows, the
+    # selector keeps its shape) but uncheckoutable until the admin flips
+    # this back. Also handy for self-fulfilled variants pulled from sale
+    # without zeroing the stock count.
+    manual_unavailable = models.BooleanField(default=False)
     weight_grams = models.PositiveIntegerField(null=True, blank=True)
     sort_order = models.PositiveIntegerField(default=0, db_index=True)
     option_values = models.ManyToManyField(

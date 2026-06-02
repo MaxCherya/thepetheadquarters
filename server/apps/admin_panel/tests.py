@@ -884,3 +884,209 @@ class InventoryDropshipFilterTests(TestCase):
         ids = self._ids(res)
         self.assertIn(str(self.self_variant.id), ids)
         self.assertIn(str(self.drop_variant.id), ids)
+
+
+@THROTTLE_OVERRIDE
+class VariantHardDeleteTests(TestCase):
+    """
+    DELETE /admin/variants/<id> hard-deletes when the variant has no
+    historical footprint; otherwise it soft-deletes so audit + COGS
+    rows survive and PROTECT-constrained FKs don't blow up.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        from apps.products.models import Product, ProductTranslation
+        cls.owner = _make_staff("owner@test.local", ROLE_OWNER)
+        cls.product = Product.objects.create(fulfillment_type="self")
+        ProductTranslation.objects.create(
+            product=cls.product, language="en", name="Test Product",
+            description="", short_description="",
+        )
+        cls.product.slug = None
+        cls.product.save()
+
+    def setUp(self):
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.owner)
+
+    def _new_variant(self, sku: str):
+        from apps.products.models import ProductVariant
+        return ProductVariant.objects.create(
+            product=self.product, sku=sku, price=1000, stock_quantity=0,
+        )
+
+    def test_clean_variant_is_hard_deleted(self):
+        from apps.products.models import ProductVariant
+        v = self._new_variant("CLEAN-1")
+        res = self.client.delete(f"/api/v1/admin/variants/{v.id}/")
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["data"]["hard_deleted"])
+        self.assertFalse(ProductVariant.objects.filter(id=v.id).exists())
+
+    def test_variant_with_stock_batch_is_soft_deleted(self):
+        from apps.products.models import ProductVariant
+        from apps.procurement.models import StockBatch
+        from django.utils import timezone
+        v = self._new_variant("BATCH-1")
+        StockBatch.objects.create(
+            variant=v, quantity_received=10, quantity_remaining=10,
+            unit_cost=500, received_at=timezone.now(),
+        )
+
+        res = self.client.delete(f"/api/v1/admin/variants/{v.id}/")
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(res.json()["data"]["hard_deleted"])
+
+        v.refresh_from_db()
+        self.assertFalse(v.is_active)
+        self.assertTrue(ProductVariant.objects.filter(id=v.id).exists())
+
+    def test_variant_with_purchase_order_item_is_soft_deleted(self):
+        from apps.products.models import ProductVariant
+        from apps.procurement.models import PurchaseOrder, PurchaseOrderItem
+        from apps.suppliers.models import Supplier
+
+        v = self._new_variant("PO-1")
+        supplier = Supplier.objects.create(name="Test Supplier")
+        po = PurchaseOrder.objects.create(
+            supplier=supplier, po_number="PO-000001", created_by=self.owner,
+        )
+        PurchaseOrderItem.objects.create(
+            purchase_order=po, variant=v, quantity_ordered=5, unit_cost=500,
+        )
+
+        res = self.client.delete(f"/api/v1/admin/variants/{v.id}/")
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(res.json()["data"]["hard_deleted"])
+
+        v.refresh_from_db()
+        self.assertFalse(v.is_active)
+
+
+@THROTTLE_OVERRIDE
+class ProductHardDeleteTests(TestCase):
+    """Same logic for product-level delete: hard if no variant has history."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = _make_staff("owner@test.local", ROLE_OWNER)
+
+    def setUp(self):
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.owner)
+
+    def _new_product(self, name: str):
+        from apps.products.models import Product, ProductTranslation
+        p = Product.objects.create(fulfillment_type="self")
+        ProductTranslation.objects.create(
+            product=p, language="en", name=name,
+            description="", short_description="",
+        )
+        p.slug = None
+        p.save()
+        return p
+
+    def test_clean_product_is_hard_deleted(self):
+        from apps.products.models import Product, ProductVariant
+        p = self._new_product("Clean")
+        ProductVariant.objects.create(product=p, sku="CP-1", price=1000)
+
+        res = self.client.delete(f"/api/v1/admin/products/{p.id}/")
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["data"]["hard_deleted"])
+        self.assertFalse(Product.objects.filter(id=p.id).exists())
+
+    def test_product_with_history_is_soft_deleted(self):
+        from apps.products.models import Product, ProductVariant
+        from apps.procurement.models import StockBatch
+        from django.utils import timezone
+
+        p = self._new_product("Used")
+        v = ProductVariant.objects.create(product=p, sku="USED-1", price=1000)
+        StockBatch.objects.create(
+            variant=v, quantity_received=10, quantity_remaining=10,
+            unit_cost=500, received_at=timezone.now(),
+        )
+
+        res = self.client.delete(f"/api/v1/admin/products/{p.id}/")
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(res.json()["data"]["hard_deleted"])
+
+        p.refresh_from_db()
+        self.assertFalse(p.is_active)
+        self.assertTrue(Product.objects.filter(id=p.id).exists())
+
+
+@THROTTLE_OVERRIDE
+class ShippingSettingsTests(TestCase):
+    """
+    DB-backed shipping prices replace the old SHIPPING_*_PENCE env vars.
+    Admin can read + write via /admin/shipping; calculate_shipping reads
+    the live values and falls back to env defaults only if the DB row
+    is missing (defensive — should never happen in practice because
+    `current()` lazily creates the row on first read).
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.owner = _make_staff("owner@test.local", ROLE_OWNER)
+        cls.auditor = _make_staff("auditor@test.local", ROLE_AUDITOR)
+
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_owner_can_read_shipping(self):
+        self.client.force_authenticate(user=self.owner)
+        res = self.client.get("/api/v1/admin/shipping/")
+        self.assertEqual(res.status_code, 200)
+        body = res.json()["data"]
+        # Defaults seeded on first read.
+        self.assertEqual(body["free_threshold_pence"], 3000)
+        self.assertEqual(body["flat_rate_pence"], 399)
+
+    def test_owner_can_update_shipping(self):
+        from apps.orders.models import ShippingSettings
+
+        self.client.force_authenticate(user=self.owner)
+        res = self.client.patch(
+            "/api/v1/admin/shipping/",
+            {"free_threshold_pence": 5000, "flat_rate_pence": 499},
+            format="json",
+        )
+        self.assertEqual(res.status_code, 200)
+
+        cfg = ShippingSettings.current()
+        self.assertEqual(cfg.free_threshold_pence, 5000)
+        self.assertEqual(cfg.flat_rate_pence, 499)
+
+    def test_auditor_cannot_update_shipping(self):
+        self.client.force_authenticate(user=self.auditor)
+        res = self.client.patch(
+            "/api/v1/admin/shipping/",
+            {"flat_rate_pence": 100},
+            format="json",
+        )
+        self.assertEqual(res.status_code, 403)
+
+    def test_update_rejects_non_integer(self):
+        self.client.force_authenticate(user=self.owner)
+        res = self.client.patch(
+            "/api/v1/admin/shipping/",
+            {"flat_rate_pence": "nope"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, 422)
+
+    def test_calculate_shipping_uses_live_db_values(self):
+        from apps.orders.models import ShippingSettings
+        from apps.orders.services import calculate_shipping
+
+        cfg = ShippingSettings.current()
+        cfg.free_threshold_pence = 1000
+        cfg.flat_rate_pence = 250
+        cfg.save()
+
+        self.assertEqual(calculate_shipping(500), 250)   # below threshold
+        self.assertEqual(calculate_shipping(1000), 0)    # at threshold
+        self.assertEqual(calculate_shipping(2500), 0)    # well above

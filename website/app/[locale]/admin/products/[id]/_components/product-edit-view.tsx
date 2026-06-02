@@ -36,8 +36,8 @@ export function ProductEditView({ productId }: ProductEditViewProps) {
 
   async function handleDelete() {
     try {
-      await deleteMutation.mutateAsync(productId);
-      toast.success("Product deactivated");
+      const res = await deleteMutation.mutateAsync(productId);
+      toast.success(res.data.hard_deleted ? "Product deleted" : "Product deactivated");
       window.location.href = "/admin/products";
     } catch {
       toast.danger("Failed to delete");
@@ -192,9 +192,9 @@ export function ProductEditView({ productId }: ProductEditViewProps) {
 
       <ConfirmModal
         open={confirmDelete}
-        title="Deactivate Product?"
-        message="The product will be hidden from the storefront. You can reactivate it later via the API."
-        confirmLabel="Deactivate"
+        title="Delete product?"
+        message="The product will be permanently removed if it has no order, PO or stock history. Otherwise it will be deactivated (hidden from the storefront, audit records preserved)."
+        confirmLabel="Delete"
         destructive
         loading={deleteMutation.isPending}
         onConfirm={handleDelete}

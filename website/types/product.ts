@@ -91,6 +91,12 @@ export interface ProductVariant {
   images: ProductImage[];
 }
 
+/* Note: the storefront does NOT receive manual_unavailable directly —
+   the backend already collapses it into `in_stock=false`, which is what
+   the variant selector + PDP key off. The admin-side `AdminVariant`
+   type (in hooks/use-admin-products.ts) carries the raw flag for the
+   editor toggle. */
+
 export interface ProductImage {
   id: string;
   url: string;

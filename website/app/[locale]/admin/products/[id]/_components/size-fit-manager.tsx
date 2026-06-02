@@ -222,19 +222,49 @@ export function SizeFitManager({ productId, product }: SizeFitManagerProps) {
             </a>
           </>
         ) : (
-          <p
-            style={{
-              fontFamily: "var(--font-montserrat)",
-              fontSize: "var(--text-xs)",
-              color: "var(--white-faint)",
-              lineHeight: 1.5,
-            }}
-          >
-            No measuring guide set on this product's category. Add one in
-            Django admin under Categories → choose the category → "Measure
-            guide text" + "Measure guide image url". One guide can power
-            every product in that category.
-          </p>
+          <>
+            <p
+              style={{
+                fontFamily: "var(--font-montserrat)",
+                fontSize: "var(--text-xs)",
+                color: "var(--white-faint)",
+                lineHeight: 1.5,
+              }}
+            >
+              No measuring guide set on this product&apos;s category. One guide
+              powers every product in the category, so the cleanest place to
+              add it is the category itself.
+            </p>
+            {product.category_ids.length > 0 ? (
+              <a
+                href={`/admin/categories/${product.category_ids[0]}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block"
+                style={{
+                  fontFamily: "var(--font-montserrat)",
+                  fontSize: 11,
+                  color: "var(--gold-dark)",
+                  letterSpacing: "var(--tracking-wide)",
+                  textTransform: "uppercase",
+                }}
+              >
+                Add measure guide on category →
+              </a>
+            ) : (
+              <p
+                className="mt-2"
+                style={{
+                  fontFamily: "var(--font-montserrat)",
+                  fontSize: 11,
+                  color: "var(--white-faint)",
+                }}
+              >
+                Assign this product to a category first (Info tab), then come
+                back to set up the guide.
+              </p>
+            )}
+          </>
         )}
       </div>
 

@@ -28,6 +28,30 @@ from apps.admin_panel.serializers.products import (
 from apps.admin_panel.views.base import AdminBaseView
 
 
+def _variant_has_history(variant: ProductVariant) -> bool:
+    """
+    True if this variant has any record that hard-deletion would corrupt
+    or be blocked by:
+
+      - OrderItem (FK=SET_NULL — wouldn't error, but past orders would
+        lose their product link)
+      - PurchaseOrderItem (FK=PROTECT — DB-level block)
+      - StockBatch / StockMovement (FK=CASCADE — would silently wipe
+        the FIFO ledger + audit trail)
+    """
+    return (
+        variant.orderitem_set.exists()
+        or variant.purchase_order_items.exists()
+        or variant.stock_batches.exists()
+        or variant.stock_movements.exists()
+    )
+
+
+def _product_has_history(product: Product) -> bool:
+    """True if any of this product's variants has history (see above)."""
+    return any(_variant_has_history(v) for v in product.variants.all())
+
+
 class AdminProductListView(AdminBaseView):
     required_permissions = {
         "GET": "products.view",
@@ -214,9 +238,18 @@ class AdminProductDetailView(AdminBaseView):
         product = self._get(product_id)
         if not product:
             return error_response("admin.products.not_found", status_code=404)
-        product.is_active = False
-        product.save(update_fields=["is_active"])
-        return success_response()
+
+        # Hard-delete only when no variant of this product has any
+        # historical footprint (orders, POs, stock batches/movements).
+        # Otherwise fall back to soft-delete so audit + COGS rows stay
+        # intact and PROTECT-constrained FKs don't blow up.
+        if _product_has_history(product):
+            product.is_active = False
+            product.save(update_fields=["is_active"])
+            return success_response(data={"hard_deleted": False})
+
+        product.delete()
+        return success_response(data={"hard_deleted": True})
 
 
 def _apply_option_values(product, variant, option_value_ids):
@@ -333,9 +366,14 @@ class AdminVariantDetailView(AdminBaseView):
             variant = ProductVariant.objects.get(id=variant_id)
         except ProductVariant.DoesNotExist:
             return error_response("admin.variants.not_found", status_code=404)
-        variant.is_active = False
-        variant.save(update_fields=["is_active"])
-        return success_response()
+
+        if _variant_has_history(variant):
+            variant.is_active = False
+            variant.save(update_fields=["is_active"])
+            return success_response(data={"hard_deleted": False})
+
+        variant.delete()
+        return success_response(data={"hard_deleted": True})
 
 
 class AdminProductVariantsBulkView(AdminBaseView):

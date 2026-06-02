@@ -373,6 +373,42 @@ input[type="checkbox"] {
   background: var(--gold);
 }
 
+/* Embedded media inside descriptions — YouTube/Vimeo iframes, raw
+   <img>/<video> tags. The admin pastes raw HTML (including YouTube
+   embed snippets) into the description, so we override the fixed
+   width/height attributes those carry to keep them responsive. */
+.product-description img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: var(--space-5) 0;
+  border-radius: var(--radius-md);
+}
+
+.product-description iframe,
+.product-description video {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  margin: var(--space-5) 0;
+  border-radius: var(--radius-md);
+  border: 0;
+}
+
+.product-description figure {
+  margin: var(--space-5) 0;
+}
+
+.product-description figcaption {
+  font-family: var(--font-montserrat);
+  font-size: var(--text-xs);
+  color: var(--white-faint);
+  margin-top: var(--space-2);
+  text-align: center;
+}
+
 /* Scroll animations — CSS initial states, JS reveals via inline styles */
 [data-animate] {
   opacity: 0;

@@ -54,12 +54,20 @@ def _make_product(*, fulfillment: str, name: str) -> Product:
     return product
 
 
-def _make_variant(product: Product, *, sku: str, stock: int = 0, price: int = 1000) -> ProductVariant:
+def _make_variant(
+    product: Product,
+    *,
+    sku: str,
+    stock: int = 0,
+    price: int = 1000,
+    manual_unavailable: bool = False,
+) -> ProductVariant:
     return ProductVariant.objects.create(
         product=product,
         sku=sku,
         price=price,
         stock_quantity=stock,
+        manual_unavailable=manual_unavailable,
     )
 
 
@@ -123,6 +131,32 @@ class DropshipFilterTests(TestCase):
         self.assertNotIn(str(self_empty.id), ids)
 
 
+class DropshipStorefrontDetailTests(TestCase):
+    """
+    End-to-end flow check: admin-created dropship variant with stock=0
+    surfaces on the storefront product detail with in_stock=True for
+    both the product and the variant. Catches regressions where
+    `fulfillment_type` is dropped from the response or `in_stock` is
+    computed off `stock_quantity` again.
+    """
+
+    def test_storefront_detail_reports_dropship_variant_in_stock(self):
+        from django.test import Client
+
+        product = _make_product(fulfillment="dropship", name="Drop Detail")
+        _make_variant(product, sku="DD-001", stock=0)
+        product.refresh_from_db()
+
+        res = Client().get(f"/api/v1/products/{product.slug}/")
+        self.assertEqual(res.status_code, 200)
+        body = res.json().get("data") or res.json()
+
+        self.assertEqual(body["fulfillment_type"], "dropship")
+        self.assertTrue(body["in_stock"], body)
+        self.assertEqual(len(body["variants"]), 1)
+        self.assertTrue(body["variants"][0]["in_stock"], body["variants"][0])
+
+
 class DropshipCartValidationTests(TestCase):
     def test_validate_cart_allows_dropship_with_zero_stock(self):
         from apps.orders.services import validate_cart, CartValidationError
@@ -145,6 +179,70 @@ class DropshipCartValidationTests(TestCase):
 
         product = _make_product(fulfillment="self", name="Self Cart")
         variant = _make_variant(product, sku="SC-001", stock=0)
+
+        with self.assertRaises(CartValidationError) as ctx:
+            validate_cart([{"variant_id": str(variant.id), "quantity": 1}])
+
+        self.assertEqual(ctx.exception.code, "checkout.validation_failed")
+        codes = [d["code"] for d in ctx.exception.details]
+        self.assertIn("checkout.insufficient_stock", codes)
+
+
+class ManualUnavailableTests(TestCase):
+    """
+    Admin override that flips a variant to out-of-stock regardless of
+    stock_quantity or fulfillment_type. Used when a dropship supplier
+    runs out without us wanting to deactivate the variant entirely.
+    """
+
+    def test_dropship_variant_with_manual_unavailable_is_out_of_stock(self):
+        product = _make_product(fulfillment="dropship", name="OOS Drop")
+        variant = _make_variant(
+            product, sku="OD-001", stock=0, manual_unavailable=True,
+        )
+        self.assertFalse(ProductVariantSerializer(variant).data["in_stock"])
+
+    def test_self_variant_with_stock_and_manual_unavailable_is_out_of_stock(self):
+        # Override beats positive stock — useful for pulling a self-
+        # fulfilled SKU without zeroing the count.
+        product = _make_product(fulfillment="self", name="OOS Self")
+        variant = _make_variant(
+            product, sku="OS-001", stock=10, manual_unavailable=True,
+        )
+        self.assertFalse(ProductVariantSerializer(variant).data["in_stock"])
+
+    def test_list_serializer_excludes_manual_unavailable_dropship(self):
+        # A dropship product whose only variant is flagged unavailable
+        # surfaces as out-of-stock on the storefront grid.
+        product = _make_product(fulfillment="dropship", name="OOS Drop List")
+        _make_variant(product, sku="ODL-001", stock=0, manual_unavailable=True)
+        self.assertFalse(ProductListSerializer(product).data["in_stock"])
+
+    def test_in_stock_filter_excludes_manual_unavailable(self):
+        from rest_framework.test import APIRequestFactory
+
+        unavailable_drop = _make_product(fulfillment="dropship", name="MU Drop")
+        _make_variant(unavailable_drop, sku="MUD-001", stock=0, manual_unavailable=True)
+
+        stocked_self = _make_product(fulfillment="self", name="MU Self")
+        _make_variant(stocked_self, sku="MUS-001", stock=5)
+
+        factory = APIRequestFactory()
+        request = factory.get("/", {"in_stock": "true"})
+        f = ProductFilter(
+            data=request.GET, queryset=Product.objects.all(), request=request,
+        )
+        ids = set(str(p.id) for p in f.qs)
+        self.assertIn(str(stocked_self.id), ids)
+        self.assertNotIn(str(unavailable_drop.id), ids)
+
+    def test_validate_cart_blocks_manual_unavailable(self):
+        from apps.orders.services import validate_cart, CartValidationError
+
+        product = _make_product(fulfillment="dropship", name="Block Drop")
+        variant = _make_variant(
+            product, sku="BD-001", stock=0, manual_unavailable=True,
+        )
 
         with self.assertRaises(CartValidationError) as ctx:
             validate_cart([{"variant_id": str(variant.id), "quantity": 1}])

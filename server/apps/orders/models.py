@@ -40,6 +40,46 @@ CARRIER_TRACKING_URLS = {
 }
 
 
+class ShippingSettings(BaseModel):
+    """
+    Singleton holding the storefront's shipping pricing — one row, no
+    parent FK, no per-zone variation. We only need two numbers (the
+    free-shipping threshold and the flat fallback rate) so a dedicated
+    settings table is overkill; the singleton pattern keeps the API
+    simple (`ShippingSettings.current()` always returns *the* row) and
+    lets the admin update prices live without a redeploy.
+
+    Defaults match the previous env-var defaults so an empty DB renders
+    identical pricing.
+    """
+    free_threshold_pence = models.PositiveIntegerField(
+        default=3000,
+        help_text="Subtotal at or above which shipping is free. In pence.",
+    )
+    flat_rate_pence = models.PositiveIntegerField(
+        default=399,
+        help_text="Shipping charged when subtotal is below the free threshold. In pence.",
+    )
+
+    class Meta(BaseModel.Meta):
+        verbose_name = "Shipping settings"
+        verbose_name_plural = "Shipping settings"
+
+    def __str__(self):
+        return (
+            f"Free over £{self.free_threshold_pence / 100:.2f} · "
+            f"otherwise £{self.flat_rate_pence / 100:.2f}"
+        )
+
+    @classmethod
+    def current(cls) -> "ShippingSettings":
+        """Return the singleton row, lazily creating it on first read."""
+        obj = cls.objects.first()
+        if obj is None:
+            obj = cls.objects.create()
+        return obj
+
+
 class Order(BaseModel):
     class Status(models.TextChoices):
         PENDING = "pending", "Pending"

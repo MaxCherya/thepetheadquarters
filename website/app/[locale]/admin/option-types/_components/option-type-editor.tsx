@@ -47,18 +47,31 @@ export function OptionTypeEditor({ typeId }: Props) {
   const addValueMutation = useCreateOptionValue();
 
   const [name, setName] = useState(type?.name || "");
+  const [code, setCode] = useState(type?.code || "");
   useEffect(() => {
-    if (type) setName(type.name);
+    if (type) {
+      setName(type.name);
+      setCode(type.code);
+    }
   }, [type]);
 
   if (!type) return null;
 
-  async function saveName() {
+  async function saveType() {
+    const normalised = code.trim().toLowerCase();
+    if (!normalised) {
+      toast.danger("Code is required");
+      return;
+    }
     try {
-      await updateMutation.mutateAsync({ id: typeId, data: { name } });
+      await updateMutation.mutateAsync({
+        id: typeId,
+        data: { code: normalised, name },
+      });
       toast.success("Saved");
-    } catch {
-      toast.danger("Save failed");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Save failed";
+      toast.danger(msg);
     }
   }
 
@@ -76,13 +89,30 @@ export function OptionTypeEditor({ typeId }: Props) {
     <div className="flex flex-col gap-6">
       <div className="rounded-lg p-5" style={{ background: "var(--bg-secondary)", border: "1px solid var(--bg-border)" }}>
         <div className="flex flex-col gap-3">
-          <div>
-            <label style={labelStyle}>Name</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+          <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
+            <div>
+              <label style={labelStyle}>Code</label>
+              <input
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                style={inputStyle}
+                placeholder="e.g. size"
+              />
+              <p style={{ fontFamily: "var(--font-montserrat)", fontSize: 10, color: "var(--white-faint)", marginTop: 4 }}>
+                Internal slug — lowercase, no spaces. Used by code and URLs.
+              </p>
+            </div>
+            <div>
+              <label style={labelStyle}>Name</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+              <p style={{ fontFamily: "var(--font-montserrat)", fontSize: 10, color: "var(--white-faint)", marginTop: 4 }}>
+                Customer-facing label shown above the variant selector.
+              </p>
+            </div>
           </div>
           <div className="flex gap-2">
             <button
-              onClick={saveName}
+              onClick={saveType}
               disabled={updateMutation.isPending}
               className="flex items-center gap-2 rounded-md px-4 py-2"
               style={{ background: "var(--gold)", color: "#fff", fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", fontWeight: 600 }}

@@ -236,5 +236,8 @@ export const endpoints = {
       productFields: (productId: string) =>
         `${API_BASE}/admin/products/${productId}/customizations/fields/`,
     },
+    shipping: {
+      detail: `${API_BASE}/admin/shipping/`,
+    },
   },
 } as const;

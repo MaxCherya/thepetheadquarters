@@ -26,6 +26,7 @@ import {
   X,
   Receipt,
   UserCog,
+  PoundSterling,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import type enAdmin from "@/i18n/dictionaries/en/admin.json";
@@ -51,6 +52,7 @@ const navItems = [
   { key: "customizations" as const, href: "/admin/customizations", icon: Wand2, perms: ["products.view"] },
   { key: "optionTypes" as const, href: "/admin/option-types", icon: Tag, perms: ["products.view"] },
   { key: "integrations" as const, href: "/admin/integrations", icon: Plug, perms: ["integrations.view"] },
+  { key: "shipping" as const, href: "/admin/shipping", icon: PoundSterling, perms: ["orders.view"] },
   { key: "reviews" as const, href: "/admin/reviews", icon: Star, perms: ["reviews.view"] },
   { key: "contactMessages" as const, href: "/admin/contact-messages", icon: Mail, perms: ["contact.view"] },
   { key: "analytics" as const, href: "/admin/analytics", icon: Activity, perms: ["analytics.view"] },

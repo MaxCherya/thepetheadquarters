@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { Plus, FolderTree, Pencil, Trash2, ChevronRight, ChevronDown, Folder, FolderOpen, Upload, X } from "lucide-react";
+import Link from "next/link";
+import { Plus, FolderTree, Pencil, Trash2, ChevronRight, ChevronDown, Folder, FolderOpen, Upload, X, Ruler } from "lucide-react";
 import { toast } from "@heroui/react";
 import {
   useAdminCategories,
@@ -348,6 +349,15 @@ function CategoryTreeNode({ node, depth, collapsed, onToggle, onEdit, onDelete, 
           </div>
         </div>
         <div className="flex gap-2">
+          <Link
+            href={`/admin/categories/${c.id}`}
+            title="Measure guide + full editor"
+            aria-label="Open full editor"
+            className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[rgba(187,148,41,0.1)]"
+            style={{ color: "var(--white-faint)" }}
+          >
+            <Ruler size={14} />
+          </Link>
           <button onClick={() => onEdit(c)} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[rgba(187,148,41,0.1)]" style={{ color: "var(--white-faint)" }}><Pencil size={14} /></button>
           <button onClick={() => onDelete(c)} className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[rgba(198,40,40,0.1)]" style={{ color: "var(--white-faint)" }}><Trash2 size={14} /></button>
         </div>

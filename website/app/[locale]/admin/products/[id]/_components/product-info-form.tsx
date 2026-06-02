@@ -79,6 +79,9 @@ export function ProductInfoForm({ product, brands, categories, onSave, saving }:
 
         <div>
           <label style={labelStyle}>Description</label>
+          <p style={{ fontFamily: "var(--font-montserrat)", fontSize: 11, color: "var(--white-faint)", marginBottom: "var(--space-2)" }}>
+            Paste raw HTML — &lt;img&gt;, &lt;video&gt;, and YouTube/Vimeo &lt;iframe&gt; embeds all render on the product page.
+          </p>
           <HtmlEditor value={description} onChange={setDescription} rows={8} />
         </div>
 

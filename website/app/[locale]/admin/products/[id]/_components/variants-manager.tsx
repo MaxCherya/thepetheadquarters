@@ -35,6 +35,7 @@ interface VariantRow {
   compare_at_price: number | null;
   cost_price: number | null;
   stock_quantity: number;
+  manual_unavailable: boolean;
   weight_grams: number | null;
   sort_order: number;
   is_active: boolean;
@@ -49,6 +50,7 @@ function emptyRow(sortOrder: number, axisIds: string[]): VariantRow {
     compare_at_price: null,
     cost_price: null,
     stock_quantity: 0,
+    manual_unavailable: false,
     weight_grams: null,
     sort_order: sortOrder,
     is_active: true,
@@ -84,6 +86,7 @@ export function VariantsManager({ productId, variants }: VariantsManagerProps) {
       compare_at_price: v.compare_at_price,
       cost_price: v.cost_price,
       stock_quantity: v.stock_quantity,
+      manual_unavailable: v.manual_unavailable,
       weight_grams: v.weight_grams,
       sort_order: v.sort_order,
       is_active: v.is_active,
@@ -117,6 +120,7 @@ export function VariantsManager({ productId, variants }: VariantsManagerProps) {
       compare_at_price: editing.compare_at_price,
       cost_price: editing.cost_price,
       stock_quantity: editing.stock_quantity,
+      manual_unavailable: editing.manual_unavailable,
       weight_grams: editing.weight_grams,
       sort_order: editing.sort_order,
       is_active: editing.is_active,
@@ -141,8 +145,8 @@ export function VariantsManager({ productId, variants }: VariantsManagerProps) {
   async function handleDelete() {
     if (!deleting) return;
     try {
-      await deleteMutation.mutateAsync(deleting.id);
-      toast.success("Variant deactivated");
+      const res = await deleteMutation.mutateAsync(deleting.id);
+      toast.success(res.data.hard_deleted ? "Variant deleted" : "Variant deactivated");
     } catch {
       toast.danger("Delete failed");
     } finally {
@@ -203,6 +207,7 @@ export function VariantsManager({ productId, variants }: VariantsManagerProps) {
                 <div className="flex-1">
                   <p style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--white)" }}>
                     {v.sku} {!v.is_active && <span style={{ color: "var(--error)" }}>(inactive)</span>}
+                    {v.manual_unavailable && <span style={{ color: "var(--error)" }}> (out of stock)</span>}
                   </p>
                   <div className="mt-1 flex flex-wrap items-center gap-2">
                     {v.option_values.length === 0 ? (
@@ -273,9 +278,9 @@ export function VariantsManager({ productId, variants }: VariantsManagerProps) {
 
       <ConfirmModal
         open={!!deleting}
-        title="Deactivate Variant?"
-        message={`This will hide ${deleting?.sku} from the storefront.`}
-        confirmLabel="Deactivate"
+        title="Delete variant?"
+        message={`The system will permanently remove ${deleting?.sku} if it has no order, PO or stock history — otherwise it will be deactivated to preserve audit records.`}
+        confirmLabel="Delete"
         destructive
         loading={deleteMutation.isPending}
         onConfirm={handleDelete}
@@ -508,6 +513,15 @@ function VariantEditorForm({
             <input type="checkbox" checked={editing.is_active} onChange={(e) => onChange({ ...editing, is_active: e.target.checked })} style={{ accentColor: "var(--gold)" }} />
             Active (visible in store)
           </label>
+        </div>
+        <div className="md:col-span-2">
+          <label className="flex items-center gap-2" style={{ fontFamily: "var(--font-montserrat)", fontSize: "var(--text-sm)", color: "var(--white-dim)" }}>
+            <input type="checkbox" checked={editing.manual_unavailable} onChange={(e) => onChange({ ...editing, manual_unavailable: e.target.checked })} style={{ accentColor: "var(--gold)" }} />
+            Mark out of stock (override)
+          </label>
+          <p style={hintStyle}>
+            Forces this variant to display as out-of-stock and blocks add-to-cart, regardless of stock or fulfillment type. Use when your dropship supplier is sold out, or to temporarily pull a self-fulfilled SKU.
+          </p>
         </div>
       </div>
 

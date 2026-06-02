@@ -72,6 +72,17 @@ def validate_cart(items):
             errors.append({"variant_id": vid, "code": "checkout.product_unavailable"})
             continue
 
+        # Admin override — variant is intentionally marked out-of-stock
+        # (dropship supplier ran out, self-fulfilled pulled for QA, etc).
+        # Blocks checkout regardless of stock_quantity / fulfillment_type.
+        if variant.manual_unavailable:
+            errors.append({
+                "variant_id": vid,
+                "code": "checkout.insufficient_stock",
+                "available": 0,
+            })
+            continue
+
         # Dropship variants don't carry local inventory — the supplier
         # ships per order, so stock_quantity is meaningless and would
         # always fail this check. Skip the gate for them; everything
@@ -140,9 +151,23 @@ def validate_cart(items):
 
 
 def calculate_shipping(subtotal_pence):
-    """Calculate shipping cost based on subtotal."""
-    threshold = getattr(settings, "SHIPPING_FREE_THRESHOLD_PENCE", 3000)
-    flat_rate = getattr(settings, "SHIPPING_FLAT_RATE_PENCE", 399)
+    """
+    Calculate shipping cost based on subtotal.
+
+    Reads the live `ShippingSettings` singleton so the admin can change
+    prices through the UI without a redeploy. Falls back to the legacy
+    env-var defaults if anything goes wrong reaching the DB — better to
+    quote a price than fail checkout silently.
+    """
+    from apps.orders.models import ShippingSettings
+
+    try:
+        cfg = ShippingSettings.current()
+        threshold = cfg.free_threshold_pence
+        flat_rate = cfg.flat_rate_pence
+    except Exception:
+        threshold = getattr(settings, "SHIPPING_FREE_THRESHOLD_PENCE", 3000)
+        flat_rate = getattr(settings, "SHIPPING_FLAT_RATE_PENCE", 399)
 
     if subtotal_pence >= threshold:
         return 0

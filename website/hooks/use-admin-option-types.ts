@@ -70,7 +70,7 @@ export function useCreateOptionType() {
 export function useUpdateOptionType() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name?: string; sort_order?: number } }) =>
+    mutationFn: async ({ id, data }: { id: string; data: { code?: string; name?: string; sort_order?: number } }) =>
       apiClient.patch(endpoints.admin.optionTypes.detail(id), data),
     onSuccess: () => qc.invalidateQueries({ queryKey: optionTypeKeys.all }),
   });

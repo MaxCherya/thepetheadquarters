@@ -57,6 +57,7 @@ class AdminProductVariantSerializer(serializers.ModelSerializer):
             "compare_at_price",
             "cost_price",
             "stock_quantity",
+            "manual_unavailable",
             "weight_grams",
             "sort_order",
             "is_active",
@@ -262,6 +263,7 @@ class AdminVariantWriteSerializer(serializers.Serializer):
     compare_at_price = serializers.IntegerField(min_value=0, required=False, allow_null=True)
     cost_price = serializers.IntegerField(min_value=0, required=False, allow_null=True)
     stock_quantity = serializers.IntegerField(min_value=0, default=0)
+    manual_unavailable = serializers.BooleanField(default=False)
     weight_grams = serializers.IntegerField(min_value=0, required=False, allow_null=True)
     sort_order = serializers.IntegerField(default=0)
     is_active = serializers.BooleanField(default=True)

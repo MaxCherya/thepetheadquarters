@@ -96,6 +96,14 @@ class AdminOptionTypeDetailView(AdminBaseView):
         ot = self._get(option_type_id)
         if not ot:
             return error_response("admin.option_types.not_found", status_code=404)
+        if "code" in request.data:
+            new_code = (request.data.get("code") or "").strip().lower()
+            if not new_code:
+                return validation_error_response({"code": "required"})
+            if OptionType.objects.filter(code=new_code).exclude(id=ot.id).exists():
+                return error_response("admin.option_types.code_taken")
+            ot.code = new_code
+            ot.save(update_fields=["code"])
         if "name" in request.data:
             translation, _ = OptionTypeTranslation.objects.get_or_create(
                 option_type=ot, language="en",

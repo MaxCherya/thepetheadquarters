@@ -27,10 +27,20 @@ class ProductFilter(filters.FilterSet):
         # Dropship products are always treated as in-stock when they
         # have at least one active variant — the supplier ships per
         # order, so local stock_quantity is meaningless for them.
+        # Variants flagged manual_unavailable (admin override) are
+        # excluded for both fulfillment types.
         if value:
             return queryset.filter(
-                Q(fulfillment_type="dropship", variants__is_active=True)
-                | Q(variants__stock_quantity__gt=0, variants__is_active=True)
+                Q(
+                    fulfillment_type="dropship",
+                    variants__is_active=True,
+                    variants__manual_unavailable=False,
+                )
+                | Q(
+                    variants__stock_quantity__gt=0,
+                    variants__is_active=True,
+                    variants__manual_unavailable=False,
+                )
             ).distinct()
         return queryset
 

@@ -81,9 +81,9 @@ export default function NewProductPage() {
 
           <div>
             <label style={labelStyle}>Description</label>
-            <HtmlEditor value={description} onChange={setDescription} rows={8} placeholder="<h3>Wholesome Nutrition</h3><p>Made with...</p><ul><li>Feature 1</li></ul>" />
+            <HtmlEditor value={description} onChange={setDescription} rows={8} placeholder={'<h3>Wholesome Nutrition</h3>\n<p>Made with...</p>\n<ul><li>Feature 1</li></ul>\n<iframe width="560" height="315" src="https://www.youtube.com/embed/VIDEO_ID" frameborder="0" allowfullscreen></iframe>\n<img src="https://example.com/photo.jpg" alt="..." />'} />
             <p style={hintStyle}>
-              Full description shown on the product page. HTML allowed (use &lt;h3&gt;, &lt;p&gt;, &lt;ul&gt;&lt;li&gt; for structure). Click Preview to see how it&apos;ll look to customers.
+              Full description shown on the product page. HTML allowed — paste &lt;h3&gt;/&lt;p&gt;/&lt;ul&gt;, &lt;img&gt;, &lt;video&gt;, or YouTube/Vimeo &lt;iframe&gt; embeds. Click Preview to see how it&apos;ll look.
             </p>
           </div>
 

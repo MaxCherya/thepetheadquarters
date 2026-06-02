@@ -84,6 +84,11 @@ class ProductVariantSerializer(serializers.ModelSerializer):
         ]
 
     def get_in_stock(self, obj) -> bool:
+        # Admin override wins over everything else — used to flag
+        # dropship variants whose supplier is sold out without having
+        # to hide the variant entirely.
+        if obj.manual_unavailable:
+            return False
         # Dropship variants are always considered available — the supplier
         # ships per-order and we never hold inventory. stock_quantity stays
         # at 0 for these and is meaningless as an availability signal.
@@ -182,12 +187,17 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     def get_in_stock(self, obj) -> bool:
         # Dropship products never hold stock locally — treat them as
-        # available as long as they have at least one active variant.
+        # available as long as they have at least one active variant
+        # that isn't manually flagged unavailable.
         # `stock_quantity` is meaningless for dropship, so checking it
         # would always render them out-of-stock.
         if obj.fulfillment_type == Product.FulfillmentType.DROPSHIP:
-            return obj.variants.filter(is_active=True).exists()
-        return obj.variants.filter(is_active=True, stock_quantity__gt=0).exists()
+            return obj.variants.filter(
+                is_active=True, manual_unavailable=False,
+            ).exists()
+        return obj.variants.filter(
+            is_active=True, manual_unavailable=False, stock_quantity__gt=0,
+        ).exists()
 
 
 class ProductDetailSerializer(ProductListSerializer):

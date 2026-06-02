@@ -47,6 +47,13 @@ export function ImageGallery({ images, productName, selectedVariantId }: ImageGa
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+  // Track per-viewer load state so we can show a spinner while the next
+  // image is fetched off the CDN — without this the customer sees the
+  // OLD image lingering until the new one resolves, which reads as a
+  // broken UI ("did my click do anything?"). Reset on each navigation
+  // and let Next/Image's onLoad clear it once decoding finishes.
+  const [mainLoaded, setMainLoaded] = useState(false);
+  const [fullscreenLoaded, setFullscreenLoaded] = useState(false);
 
   // Whenever the variant changes, snap to the first image (a variant-tagged
   // one if present, otherwise the first agnostic shot) so the customer
@@ -56,6 +63,13 @@ export function ImageGallery({ images, productName, selectedVariantId }: ImageGa
   }, [selectedVariantId]);
 
   const activeImage = sorted[activeIndex];
+
+  // Reset loaded flag whenever the active image URL changes — so the
+  // spinner appears immediately on slide change.
+  useEffect(() => {
+    setMainLoaded(false);
+    setFullscreenLoaded(false);
+  }, [activeImage?.url]);
 
   const goNext = useCallback(() => {
     setActiveIndex((i) => (i + 1) % sorted.length);
@@ -108,7 +122,23 @@ export function ImageGallery({ images, productName, selectedVariantId }: ImageGa
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover transition-transform duration-500 group-hover:scale-105"
             priority
+            onLoad={() => setMainLoaded(true)}
           />
+          {/* Loading overlay — shows while Next/Image is fetching the
+              new slide. The transition-opacity makes the fade-out feel
+              smooth instead of snapping off when the image lands. */}
+          <div
+            className="pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-200"
+            style={{
+              background: "rgba(15, 15, 18, 0.55)",
+              opacity: mainLoaded ? 0 : 1,
+            }}
+          >
+            <div
+              className="h-8 w-8 animate-spin rounded-full"
+              style={{ border: "3px solid rgba(255,255,255,0.2)", borderTopColor: "var(--gold)" }}
+            />
+          </div>
           {/* Zoom hint */}
           <div
             className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100"
@@ -198,7 +228,17 @@ export function ImageGallery({ images, productName, selectedVariantId }: ImageGa
               sizes="90vw"
               className="object-contain"
               priority
+              onLoad={() => setFullscreenLoaded(true)}
             />
+            <div
+              className="pointer-events-none absolute inset-0 flex items-center justify-center transition-opacity duration-200"
+              style={{ opacity: fullscreenLoaded ? 0 : 1 }}
+            >
+              <div
+                className="h-10 w-10 animate-spin rounded-full"
+                style={{ border: "3px solid rgba(255,255,255,0.25)", borderTopColor: "var(--gold)" }}
+              />
+            </div>
           </div>
 
           {/* Next */}

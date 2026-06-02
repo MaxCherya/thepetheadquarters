@@ -1,6 +1,7 @@
 from django.urls import path
 
 from apps.admin_panel.views.dashboard import DashboardView
+from apps.admin_panel.views.shipping import AdminShippingSettingsView
 from apps.admin_panel.views.roles import (
     AdminRoleCatalogueView,
     AdminRoleCloneView,
@@ -264,4 +265,9 @@ urlpatterns = [
     path("roles/", AdminRoleListView.as_view()),
     path("roles/<str:code>/", AdminRoleDetailView.as_view()),
     path("roles/<str:code>/clone/", AdminRoleCloneView.as_view()),
+
+    # Storefront shipping pricing (free threshold + flat rate). Live
+    # edit via the admin UI replaces the old SHIPPING_*_PENCE env vars
+    # so price changes ship without a redeploy.
+    path("shipping/", AdminShippingSettingsView.as_view()),
 ]

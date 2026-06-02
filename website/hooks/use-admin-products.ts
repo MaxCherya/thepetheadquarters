@@ -37,6 +37,9 @@ export interface AdminVariant {
   compare_at_price: number | null;
   cost_price: number | null;
   stock_quantity: number;
+  /** Admin override: forces the variant out-of-stock regardless of
+   *  stock_quantity or fulfillment_type. */
+  manual_unavailable: boolean;
   weight_grams: number | null;
   sort_order: number;
   is_active: boolean;
@@ -149,11 +152,21 @@ export function useUpdateProduct(productId: string) {
   });
 }
 
+/**
+ * The backend hard-deletes when the row has no history (no orders, no
+ * POs, no stock batches/movements) and soft-deletes otherwise. Callers
+ * read `hard_deleted` to surface the right toast/redirect.
+ */
+interface DeleteResult {
+  status: "success";
+  data: { hard_deleted: boolean };
+}
+
 export function useDeleteProduct() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (productId: string) => {
-      return apiClient.del(endpoints.admin.products.detail(productId));
+      return apiClient.del<DeleteResult>(endpoints.admin.products.detail(productId));
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: adminProductKeys.all }),
   });
@@ -165,6 +178,7 @@ interface VariantFormData {
   compare_at_price: number | null;
   cost_price: number | null;
   stock_quantity: number;
+  manual_unavailable: boolean;
   weight_grams: number | null;
   sort_order: number;
   is_active: boolean;
@@ -202,7 +216,7 @@ export function useDeleteVariant(productId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (variantId: string) => {
-      return apiClient.del(endpoints.admin.variants.detail(variantId));
+      return apiClient.del<DeleteResult>(endpoints.admin.variants.detail(variantId));
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: adminProductKeys.detail(productId) });
